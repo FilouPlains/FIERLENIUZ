@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 if __name__ == "__main__":
     # File emplacement.
-    path: str = "../Order-Disorder-continuum/hca.out"
+    path: str = "embeddings/hca.out"
     hca_out: object = []
 
     # Read the file.
