@@ -1,10 +1,11 @@
 """Program used to transform the whole `.hca` file into a numpy array
-file (`.npy`).
+file (`.npy`). **IT'S NOT A MODULE!** It's not supposed to be imported/used in
+an other script!
 """
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "24/01/2023"
+__date__ = "25/01/2023"
 __version__ = "1.0.0"
 __copyright__ = "CC BY-SA"
 
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             split_line: "list[str]" = line.split()
             # Keep the domain's ID and a numpy array as a bool type.
             read_in: "list[str]" = [domain_name + split_line[1],
-                                    np.array([*split_line[-1]], dtype=bool)]
+                                    np.array([*split_line[-1]]) == "1"]
 
             hca_out += [read_in]
 
