@@ -5,7 +5,7 @@
 
 ### Install environment 📶
 
-**Those next commands are to used when you are in the 📁 `env/` directory:**
+**Those next commands are to used when you are in the `📁 env/` directory:**
 
 ```bash
 conda env create --file fierlenius.yml
