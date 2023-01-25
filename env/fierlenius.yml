@@ -1,0 +1,7 @@
+name: fierlenius
+channels:
+  - defaults
+dependencies:
+  - numpy=1.23.5=py310hd5efca6_0
+  - numpy-base=1.23.5=py310h8e6c178_0
+  - tqdm=4.64.1=py310h06a4308_0
