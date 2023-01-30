@@ -4,8 +4,8 @@ Peitsch code.
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "25/01/2023"
-__version__ = "1.0.0"
+__date__ = "30/01/2023"
+__version__ = "1.0.1"
 __copyright__ = "CC BY-SA"
 
 # [N]
