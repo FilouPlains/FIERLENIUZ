@@ -48,7 +48,7 @@ class Corpus(object):
         corpus_raw = u""
         files = glob.glob(self.dirs)
         files.sort()
-        print(f"Number of files in corpus: {len(files)}")
+
         for f in tqdm(files):
             with codecs.open(f, "r", "utf-8") as book_file:
                 corpus_raw += book_file.read()
@@ -62,13 +62,21 @@ class Corpus(object):
                 "Error: no corpus object found, use load_corpus function to generate corpus object")
             return
         raw_sentences = self.corpus.split(delim)
+
         sentences = []
+
         for raw_sentence in tqdm(raw_sentences):
             if len(raw_sentence) > 0:
                 sentences.append(raw_sentence.split())
+
         self.sentences = sentences
+
+        print(f"{len(self.sentences)=}")
+
         # update number of tokens in corpus
         self.token_count = sum([len(sentence) for sentence in sentences])
+
+        print(f"{self.token_count=}")
 
 
 def main(args):
@@ -79,6 +87,8 @@ def main(args):
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
                         filename=os.path.join(out_dir, f"{args.alias}.log"), level=logging.INFO)
     corpus = Corpus(args.input)
+
+    print("corpus.load_corpus()")
     corpus.load_corpus()
     corpus.make_sentences()
     # Seed for the RNG, to make the results reproducible.
@@ -108,14 +118,14 @@ def main(args):
     all_word_vectors_matrix_2d = mapper.fit_transform(
         gene2vec.wv.vectors.astype('float64'))
 
-    print(gene2vec.wv.key_to_index['K00077.7'])
-    print(all_word_vectors_matrix_2d[gene2vec.wv.key_to_index['K00077.7']])
-    print(gene2vec.wv['K00077.7'], len(gene2vec.wv['K00077.7']))
-    print(gene2vec.wv.distances('K00077.7'))
-    result = gene2vec.wv.similar_by_word('K00077.7')
-    most_similar_key, similarity = result[0]  # look at the first match
-    print(f"{most_similar_key}: {similarity:.4f}")
-    # gene2vec.wv.save('word_vectors.kv')
+    # print(gene2vec.wv.key_to_index['K00077.7'])
+    # print(all_word_vectors_matrix_2d[gene2vec.wv.key_to_index['K00077.7']])
+    # print(gene2vec.wv['K00077.7'], len(gene2vec.wv['K00077.7']))
+    # print(gene2vec.wv.distances('K00077.7'))
+    # result = gene2vec.wv.similar_by_word('K00077.7')
+    # most_similar_key, similarity = result[0]  # look at the first match
+    # print(f"{most_similar_key}: {similarity:.4f}")
+    # # gene2vec.wv.save('word_vectors.kv')
 
     points = pd.DataFrame([(word, coords[0], coords[1])
                            for word, coords in [(word, all_word_vectors_matrix_2d[gene2vec.wv.key_to_index[word]])
