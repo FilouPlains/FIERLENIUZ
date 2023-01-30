@@ -15,7 +15,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def peitsch_translator(data: object) -> object:
+def peitsch_translator(data: object, max_size: int = 100) -> object:
     """This function is used to transform input hydrophobic data into Peitsch
     code.
 
@@ -33,17 +33,19 @@ def peitsch_translator(data: object) -> object:
     # To contain all Peitsch code.
     peitsch_list: list = []
 
+    # A vector of power from 0 to n by 1.
+    power_vec: object = np.arange(0, max_size)
+    # A vector of 2.
+    two_vec: object = np.full(max_size, 2)
+    power: object = np.power(two_vec, power_vec)
+
     for line in tqdm(data, desc="PARSING FILE"):
         # Get the length of the hydrophobic cluster.
         length: int = line[1].shape[0]
 
-        # A vector of power from 0 to n by 1.
-        power_vec: object = np.arange(0, length)
-        # A vector of 2.
-        two_vec: object = np.full(length, 2)
         # Take the vector of 2 to the power of the power vector, then sum
         # the whole vector.
-        peitsch_code: int = np.sum(np.power(two_vec, power_vec)[line[1]])
+        peitsch_code: int = np.sum(power[0:length][line[1]])
 
         # Adding the Peitsch code to the list.
         peitsch_list += [peitsch_code]
@@ -52,7 +54,10 @@ def peitsch_translator(data: object) -> object:
 
 
 if __name__ == "__main__":
-    peitsch: object = peitsch_translator(np.load("embeddings/hca.npy",
-                                                 allow_pickle=True))
+    # Get data.
+    data: object = np.load("embeddings/hca.npy", allow_pickle=True)
+    # Translate hydrophobic clusters into Peitsch code.
+    peitsch: object = peitsch_translator(data)
 
+    # Print the obtain Peitsch code.
     print(peitsch)
