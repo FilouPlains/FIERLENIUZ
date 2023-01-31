@@ -1,12 +1,10 @@
-"""Program used to transform the whole `.hca` file into a numpy array
-file (`.npy`). **IT'S NOT A MODULE!** It's not supposed to be imported/used in
-an other script!
+"""Program used to transform the whole `.hca` file into a numpy array.
 """
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "25/01/2023"
-__version__ = "1.0.0"
+__date__ = "31/01/2023"
+__version__ = "1.0.1"
 __copyright__ = "CC BY-SA"
 
 # [N]
@@ -15,9 +13,19 @@ import numpy as np
 # [T]
 from tqdm import tqdm
 
-if __name__ == "__main__":
-    # File emplacement.
-    path: str = "embeddings/hca.out"
+def parse_hca_file(path: str) -> object:
+    """Parse a pyHCA `.out` file and output a numpy array.
+
+    Parameters
+    ----------
+    file : str
+        The `.out` path.
+
+    Returns
+    -------
+    object
+        A numpy array to save.
+    """
     hca_out: object = []
 
     # Read the file.
@@ -46,7 +54,12 @@ if __name__ == "__main__":
                                     np.array([*split_line[-1]]) == "1"]
 
             hca_out += [read_in]
+    
+    return np.asarray(hca_out, dtype=object)
+
+if __name__ == "__main__":
+    # File emplacement.
+    path: str = "embeddings/hca.out"
 
     # Convert the list into a numpy array and save it.
-    hca_out = np.asarray(hca_out, dtype=object)
-    np.save("embeddings/hca.npy", hca_out, allow_pickle=True)
+    print(parse_hca_file(path))
