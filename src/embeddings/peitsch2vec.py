@@ -21,6 +21,8 @@ simplefilter("ignore", UserWarning)
 
 # [A]
 import argparse
+# [G]
+import gensim
 # [N]
 import numpy as np
 # [O]
@@ -40,8 +42,6 @@ from multiprocessing import cpu_count
 from peitsch_translator import peitsch_translator
 # [S]
 from sys import exit as sysexit
-# [T]
-from tqdm import tqdm
 
 
 def parsing():
@@ -96,7 +96,7 @@ def parsing():
 
     parser.add_argument(
         "--mintf",
-        default=4,
+        default=1,
         type=int,
         help="[integer] Minimum term frequency, by default 4."
     )
@@ -201,25 +201,26 @@ def parsing():
 if __name__ == "__main__":
     arg: "dict[str: str|int]" = parsing()
 
-    # build model
-    gene2vec = w2v.Word2Vec(
+    # Get data.
+    hca_out: object = parse_hca_file(arg["input"])
+    # Translate hydrophobic clusters into Peitsch code.
+    peitsch: "list[list[int]]" = peitsch_translator(hca_out)
+
+    # Build model.
+    peitsch2vec = gensim.models.Word2Vec(
+        peitsch,
         sg=1,
         seed=1,
         workers=arg["cpu"],
         vector_size=arg["size"],
-        min_count=arg["mintf"],
+        min_count=1,
         window=arg["window"],
         sample=arg["sample"]
     )
 
-    # Get data.
-    hca_out: object = parse_hca_file(arg["input"])
-    # Translate hydrophobic clusters into Peitsch code.
-    peitsch: object = peitsch_translator(hca_out)
-
     # Train the the network.
-    gene2vec.build_vocab(peitsch)
-    gene2vec.train(
+    peitsch2vec.build_vocab(peitsch)
+    peitsch2vec.train(
         peitsch,
         total_examples=hca_out.shape[0],
         epochs=arg["epochs"]
@@ -230,11 +231,11 @@ if __name__ == "__main__":
 
     # Save the compute model.
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    gene2vec.save(model_path)
+    peitsch2vec.save(model_path)
 
     # Save the words data.
     word_data_path: str = os.path.join(arg["output"], f"word_data_{date}.npy")
     # Convert the embeddings into float64.
-    word_data: object = np.array(gene2vec.wv.vectors.astype("float64"),
+    word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
     np.save(word_data_path, word_data, allow_pickle=True)
