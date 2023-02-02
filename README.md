@@ -15,33 +15,29 @@ Master 2 Bio-informatics at *Univerité de Paris*
 ## Dependencies tree
 
 ```bash
+$ tree -lF -h
 .
-│
 ├── [4.0K]  data/
+│   ├── [629K]  characteristic_data_2023-02-02_15-23-23.npy
 │   ├── [ 15M]  dir.des.scope.2.08-stable.txt
 │   ├── [4.4M]  hca.out
 │   ├── [4.6K]  HCDB_summary.csv
-│   ├── [4.5M]  model_2023-01-31_14-14-13.w2v
-│   └── [4.4M]  word_data_2023-01-31_14-14-13.npy
-│
+│   ├── [4.5M]  model_2023-02-02_15-23-23.w2v
+│   └── [4.4M]  word_data_2023-02-02_15-23-23.npy
 ├── [4.0K]  env/
 │   ├── [ 157]  fierlenius.yml
 │   └── [ 624]  README.md
-│
-├── [1.4K]  README.md
-│
+├── [1.5K]  README.md
 └── [4.0K]  src/
-    │
     ├── [4.0K]  embeddings/
-    │   │
     │   ├── [1.7K]  hca_reader.py
     │   ├── [4.0K]  other_package/
     │   │   └── [6.3K]  sammon.py
-    │   │
-    │   ├── [6.6K]  peitsch2vec.py
+    │   ├── [8.5K]  peitsch2vec.py
     │   ├── [1.9K]  peitsch_translator.py
     │   ├── [4.7M]  projection.html
     │   └── [5.1M]  projection.ipynb
-    │
     └── [4.0K]  msa/
+
+6 directories, 15 files
 ```
