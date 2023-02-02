@@ -42,7 +42,7 @@ def peitsch_translator(data: object, max_size: int = 100) -> "list[list[str]]":
 
     shift: str = data[0][0].split("_")[0]
 
-    for line in tqdm(data, desc="PARSING FILE"):
+    for line in tqdm(data, desc="TRANSLATING CODES"):
         # Get the length of the hydrophobic cluster.
         length: int = line[1].shape[0]
 

@@ -42,6 +42,8 @@ from multiprocessing import cpu_count
 from peitsch_translator import peitsch_translator
 # [S]
 from sys import exit as sysexit
+# [T]
+from tqdm import tqdm
 
 
 def parsing():
@@ -96,16 +98,9 @@ def parsing():
 
     parser.add_argument(
         "--mintf",
-        default=1,
+        default=4,
         type=int,
         help="[integer] Minimum term frequency, by default 4."
-    )
-
-    parser.add_argument(
-        "--model",
-        required=False,
-        type=str,
-        help="['.w2v'] Model file, if exists."
     )
 
     parser.add_argument(
@@ -165,17 +160,6 @@ def parsing():
         sysexit(f"\n[Err## 3] The output directory '{argument['output']}' "
                 "does not exist. Please check this given directory.")
 
-    if argument["model"]:
-        # Check the model file extension.
-        if not argument["model"].endswith(".w2v"):
-            sysexit(f"\n[Err## 4] The model file '{argument['model']}' "
-                    "extension is invalid. Please, give a '.hca' file.")
-
-        # Check if the model file exists.
-        if not os.path.exists(argument["model"]):
-            sysexit(f"\n[Err## 5] The model file '{argument['model']}' does "
-                    "not exist. Please check this given file.")
-
     # Check if the input number of CPU is correct.
     if argument["cpu"] > nb_cpu:
         sysexit(f"\n[Err## 6] Ask number of CPU, {argument['cpu']}, is "
@@ -198,6 +182,55 @@ def parsing():
     return argument
 
 
+def parse_hcdb() -> "dict[int: str]":
+    """Parse the HC database to get regular secondary structure.
+
+    Returns
+    -------
+    dict[int: str]
+        A dictonary containing in key a Peitsch code and in value a regular
+        secondary structure.
+    """
+    hcdb_dict: "dict[int: str]" = {}
+
+    # Read the database.
+    with open("data/HCDB_summary.csv", "r", encoding="utf-8") as file:
+        for line in file:
+            # Skipping the first line.
+            if line[0] == "#":
+                continue
+
+            # To break the `.csv`.
+            read_line: "list[str]" = line.strip().split(",")
+            hcdb_dict[int(read_line[0])] = read_line[2]
+
+    return hcdb_dict
+
+
+def get_concentration(flat_peitsch: "list[int]", hca_out: object) \
+        -> "dict[str: int]":
+    concentration: "dict[str: int]" = {}
+
+    # Parse all Peitsch code.
+    for i, code in tqdm(enumerate(flat_peitsch), "SETTING CONCENTRATION"):
+        score = 0
+        shift = 0
+
+        # Parse a binary hydrophobic cluster.
+        for cluster_val in hca_out[i][1]:
+            # Increase the score and the value to increase it. So actually,
+            # the score evolve like so: [1, 3, 6, 10, 15, 21, ...].
+            if cluster_val:
+                shift += 1
+                score += shift
+            else:
+                shift = 0
+
+        concentration[code] = score
+
+    return concentration
+
+
 if __name__ == "__main__":
     arg: "dict[str: str|int]" = parsing()
 
@@ -213,7 +246,7 @@ if __name__ == "__main__":
         seed=1,
         workers=arg["cpu"],
         vector_size=arg["size"],
-        min_count=1,
+        min_count=arg["mintf"],
         window=arg["window"],
         sample=arg["sample"]
     )
@@ -239,3 +272,34 @@ if __name__ == "__main__":
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
     np.save(word_data_path, word_data, allow_pickle=True)
+
+    # Get the two dimension peitsch code list into one.
+    flat_peitsch: "list[int]" = []
+
+    for sentence in peitsch:
+        flat_peitsch += sentence
+
+    # Gets characteristics link to peitsch code.
+    hcdb: "dict[int: str]" = parse_hcdb()
+    concentration: "dict[int: str]" = get_concentration(flat_peitsch, hca_out)
+    charact: "list[list[any]]" = [[], [], [], []]
+
+    for code in tqdm(peitsch2vec.wv.index_to_key, "GETTING CHARACTERISTICS"):
+        # The actual code.
+        charact[0] += [code]
+        # How many times is it found.
+        charact[1] += [flat_peitsch.count(code)]
+
+        # The regular secondary structure associated to it.
+        if code in hcdb:
+            charact[2] += [hcdb[code]]
+        else:
+            charact[2] += ["N"]
+
+        # A score of hydrophobic residues concentration.
+        charact[3] += [concentration[code]]
+
+    # Save the characteristics data.
+    charact_data_path: str = os.path.join(arg["output"],
+                                          f"characteristic_data_{date}.npy")
+    np.save(charact_data_path, np.array(charact), allow_pickle=True)
