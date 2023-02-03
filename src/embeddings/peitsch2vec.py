@@ -5,8 +5,8 @@
 __authors__ = ["DUPRAT Élodie", "ROUAUD Lucas"]
 __contact__ = ["elodie.duprat@sorbonne-universite.fr",
                "lucas.rouaud@gmail.com"]
-__date__ = "30/01/2023"
-__version__ = "1.0.0"
+__date__ = "03/02/2023"
+__version__ = "1.0.1"
 __copyright__ = "CC BY-SA"
 
 # ==================================================
@@ -27,8 +27,6 @@ import gensim
 import numpy as np
 # [O]
 import os
-# [P]
-import pandas as pd
 
 # [D]
 from datetime import datetime
