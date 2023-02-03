@@ -48,7 +48,7 @@ def peitsch_translator(data: object, max_size: int = 100) -> "list[list[str]]":
 
         # Take the vector of 2 to the power of the power vector, then sum
         # the whole vector.
-        peitsch_code: int = np.sum(power[0:length][line[1]])
+        peitsch_code: str = np.sum(power[0:length][line[1]])
         
         # Get domain's ID.
         identifier: str = line[0].split("_")[0]
@@ -64,5 +64,8 @@ def peitsch_translator(data: object, max_size: int = 100) -> "list[list[str]]":
 
             sentence = [peitsch_code]
             shift = identifier
+
+    # Adding last sentence to the corpus.
+    peitsch_list += [sentence]
 
     return peitsch_list
