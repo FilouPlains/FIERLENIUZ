@@ -24,7 +24,7 @@ class Peitsch:
     # Hydrophobic cluster, concentration, cluster size, regular secondary
     # structure, representatives numbers.
     characteristic: "dict[str: list]" = {}
-    peitsch: "np.array[int]" = np.array([])
+    peitsch: "np.array[int]" = np.array([], dtype="int64")
 
     def __init__(self, ssr: "dict[str: str]") -> None:
         """Instantiate Peitsch object with a already parsed HC database with
@@ -49,38 +49,6 @@ class Peitsch:
                         f"\n {self.peitsch}")
 
         return message
-
-    # def __iter__(self) -> np.array[str]:
-    #     """Return an "iterator" on all extract Peitsch code.
-
-    #     Returns
-    #     -------
-    #     np.array[str]
-    #         An numpy array to iterate on with all Peitsch code.
-    #     """
-    #     return self.peitsch
-
-    def __next__(self) -> str:
-        """Redefine the `next()` comportement.
-
-        Returns
-        -------
-        str
-            A Peitsch code.
-
-        Raises
-        ------
-        StopIteration
-            When you try to access to an element out of the list.
-        """
-        # Checking that position is not inferior to -1 and not superior to our
-        # array size.
-        if -1 <= self.position < self.size:
-            self.position += 1
-
-            return self.peitsch[self.position]
-        else:
-            raise StopIteration
 
     def reset_position(self) -> None:
         """Set the position to `-1`. Act like a reset for `next()` function.
@@ -108,7 +76,7 @@ class Peitsch:
         size: int = code.shape[0]
 
         # Add a regular secondary structure.
-        if peitsch in self.srr:
+        if peitsch in self.ssr:
             ssr: str = self.ssr[peitsch]
         # In case of not corresponding SSR found.
         else:
@@ -143,7 +111,7 @@ class Peitsch:
         size: int = code.shape[0]
 
         # Add a regular secondary structure.
-        if peitsch in self.srr:
+        if peitsch in self.ssr:
             ssr: str = self.ssr[peitsch]
         # In case of not corresponding SSR found.
         else:
@@ -208,5 +176,5 @@ class Peitsch:
         # A vector of 2.
         two_vec: object = np.full(code.shape[0], 2)[code]
         power: object = np.power(two_vec, power_vec)
-
+        
         return np.sum(power)

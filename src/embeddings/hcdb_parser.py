@@ -31,7 +31,7 @@ def parse_hcdb(path: str) -> "dict[int: str]":
 
     # Read the database.
     with open(path, "r", encoding="utf-8") as file:
-        for line in tqdm(file, "PARSING DATABASE"):
+        for line in tqdm(file, "      PARSING DATABASE"):
             # Skipping the first line.
             if line[0] == "#":
                 continue

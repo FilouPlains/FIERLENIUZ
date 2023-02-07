@@ -32,23 +32,77 @@ from datetime import datetime
 from hcdb_parser import parse_hcdb
 from hca_reader import parse_hca_file
 # [P]
-from embeddings.arg_parser import parsing
+from arg_parser import parsing
 from peitsch import Peitsch
 # [T]
 from tqdm import tqdm
 
 
 if __name__ == "__main__":
+    introduction: str = """
+    ███████╗██╗███████╗██████╗ ██╗     ███████╗███╗   ██╗██╗██╗   ██╗███████╗
+    ██╔════╝██║██╔════╝██╔══██╗██║     ██╔════╝████╗  ██║██║██║   ██║██╔════╝
+    █████╗  ██║█████╗  ██████╔╝██║     █████╗  ██╔██╗ ██║██║██║   ██║███████╗
+    ██╔══╝  ██║██╔══╝  ██╔══██╗██║     ██╔══╝  ██║╚██╗██║██║██║   ██║╚════██║
+    ██║     ██║███████╗██║  ██║███████╗███████╗██║ ╚████║██║╚██████╔╝███████║
+    ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚══════╝
+    """
+
+    print(introduction)
     arg: "dict[str: str|int]" = parsing()
 
     # Get data.
     hca_out: object = parse_hca_file(arg["input"])
-    # Translate hydrophobic clusters into Peitsch code.
-    peitsch: "list[list[int]]" = peitsch_translator(hca_out)
-    
+    peitsch_manip: object = Peitsch(parse_hcdb("data/HCDB_summary.csv"))
+
+    # Getting all PEITSCH data.
+    for line in tqdm(hca_out, "  GETTING PEITSCH DATA"):
+        peitsch_manip += line[2]
+
+    corpus: "list[list[str]]" = []
+    sentence: "list[str]" = []
+    shift: str = ""
+
+    for i, line in enumerate(tqdm(hca_out, "         MAKING CORPUS")):
+        # Getting Peitsch code.
+        code: int = peitsch_manip.peitsch[i]
+        # Getting characteristics list.
+        charact: "list" = peitsch_manip.characteristic[code]
+
+        # Checking the hydrophobic cluster length.
+        if charact[0].shape[0] <= arg["minlen"]:
+            continue
+        # Checking the number of total cluster.
+        if charact[-1] <= arg["mintf"] or charact[-1] >= arg["maxtf"]:
+            continue
+
+        # Initialisation.
+        if shift == "":
+            # To change sentence by segment or by domain.
+            if arg["segment"]:
+                shift = f"{line[0]}_{line[1]}"
+            else:
+                shift = line[0]
+        # Adding to the "sentence" when we have the same domain/segment.
+        if shift == line[0]:
+            sentence += [f"{code}"]
+        # Adding to the "corpus" when we have a different domain/segment.
+        else:
+            corpus += [sentence]
+            sentence = [f"{code}"]
+
+            # To change sentence by segment or by domain.
+            if arg["segment"]:
+                shift = f"{line[0]}_{line[1]}"
+            else:
+                shift = line[0]
+
+    # Final sentence addition.
+    corpus += [sentence]
+
     # Build model.
     peitsch2vec = gensim.models.Word2Vec(
-        peitsch,
+        corpus,
         sg=1,
         seed=1,
         workers=arg["cpu"],
@@ -59,9 +113,9 @@ if __name__ == "__main__":
     )
 
     # Train the the network.
-    peitsch2vec.build_vocab(peitsch)
+    peitsch2vec.build_vocab(corpus)
     peitsch2vec.train(
-        peitsch,
+        corpus,
         total_examples=hca_out.shape[0],
         epochs=arg["epochs"]
     )
@@ -71,11 +125,23 @@ if __name__ == "__main__":
 
     # Save the compute model.
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    peitsch2vec.save(model_path)
+    # peitsch2vec.save(model_path)
 
     # Save the words data.
-    word_data_path: str = os.path.join(arg["output"], f"word_data_{date}.npy")
+    word_data_path: str = os.path.join(arg["output"], f"embedding_{date}.npy")
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
-    np.save(word_data_path, word_data, allow_pickle=True)
+    # np.save(word_data_path, word_data, allow_pickle=True)
+
+    charact_list: "list[list]" = []
+
+    for key in tqdm(peitsch2vec.wv.index_to_key, "SAVING CHARACTERISTICS"):
+        charact_list += [[[key] + peitsch_manip.characteristic[int(key)]]]
+
+    # Save the words data.
+    charact_data_path: str = os.path.join(arg["output"],
+                                          f"characteristics_{date}.npy")
+    # Convert the embeddings into float64.
+    charact_data: object = np.array(charact_list)
+    # np.save(charact_data_path, charact_data, allow_pickle=True)

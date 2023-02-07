@@ -33,7 +33,7 @@ def parse_hca_file(path: str) -> object:
     with open(path, "r", encoding="utf-8") as file:
         domain_name: str = ""
 
-        for line in tqdm(file, desc="PARSING FILE"):
+        for line in tqdm(file, desc="          PARSING FILE"):
             # To keep the domain's ID.
             if line.startswith(">"):
                 domain_name = line.split()[0][1:]
@@ -45,11 +45,12 @@ def parse_hca_file(path: str) -> object:
                 continue
             elif line.startswith("domain"):
                 segment += [[int(line.split()[1]), int(line.split()[2])]]
+                continue
 
             # Transform the line into a list.
             split_line: "list[str]" = line.split()
             segment_id: int = 0
-
+            
             for i, pos in enumerate(segment):
                 # The cluster interval is not included in the segment interval.
                 if not (pos[0] <= int(split_line[1]) <= pos[1] and
