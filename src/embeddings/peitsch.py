@@ -1,5 +1,4 @@
-"""This module contains a function to translate hydrophobic cluster into
-Peitsch code.
+"""This module contains an object to manipulate Peitsch code.
 """
 
 __authors__ = ["ROUAUD Lucas"]
@@ -18,7 +17,6 @@ from tqdm import tqdm
 class Peitsch:
     """An object to manipulate and add Peitsch code.
     """
-
     # The size of `peitsch` or how many Peitsch code have been added.
     size: int = 0
     # The position for the `next()` function.
@@ -26,7 +24,7 @@ class Peitsch:
     # Hydrophobic cluster, concentration, cluster size, regular secondary
     # structure, representatives numbers.
     characteristic: "dict[str: list]" = {}
-    peitsch: "np.array[str]" = np.array([])
+    peitsch: "np.array[int]" = np.array([])
 
     def __init__(self, ssr: "dict[str: str]") -> None:
         """Instantiate Peitsch object with a already parsed HC database with
@@ -52,15 +50,15 @@ class Peitsch:
 
         return message
 
-    def __iter__(self) -> np.array[str]:
-        """Return an "iterator" on all extract Peitsch code.
+    # def __iter__(self) -> np.array[str]:
+    #     """Return an "iterator" on all extract Peitsch code.
 
-        Returns
-        -------
-        np.array[str]
-            An numpy array to iterate on with all Peitsch code.
-        """
-        return self.peitsch
+    #     Returns
+    #     -------
+    #     np.array[str]
+    #         An numpy array to iterate on with all Peitsch code.
+    #     """
+    #     return self.peitsch
 
     def __next__(self) -> str:
         """Redefine the `next()` comportement.
@@ -75,6 +73,8 @@ class Peitsch:
         StopIteration
             When you try to access to an element out of the list.
         """
+        # Checking that position is not inferior to -1 and not superior to our
+        # array size.
         if -1 <= self.position < self.size:
             self.position += 1
 
@@ -100,15 +100,21 @@ class Peitsch:
         list
             A list of characteristics link to the added hydrophobic cluster.
         """
+        # Add a Peitsch code.
         peitsch: str = self.translate(code)
+        # Add a concentration value.
         concentration: int = self.concentration(code)
+        # Add a size value.
         size: int = code.shape[0]
 
+        # Add a regular secondary structure.
         if peitsch in self.srr:
             ssr: str = self.ssr[peitsch]
+        # In case of not corresponding SSR found.
         else:
             ssr: str = "N"
 
+        # Number of Peitsch code found in a "corpus".
         if peitsch in self.characteristic:
             representative: int = self.characteristic[peitsch][4] + 1
         else:
@@ -116,10 +122,10 @@ class Peitsch:
 
         self.characteristic[peitsch] = [code, concentration, size, ssr,
                                         representative]
-        self.peitsch = np.append(self.peitsch, code)
+        self.peitsch = np.append(self.peitsch, peitsch)
         self.size += 1
 
-        return self.characteristic[peitsch]
+        return self
 
     def __iadd__(self, code) -> None:
         """Add a (new) hydrophobic cluster to the object.
@@ -129,15 +135,21 @@ class Peitsch:
         code : np.array[bool]
             A hydrophobic cluster.
         """
+        # Add a Peitsch code.
         peitsch: str = self.translate(code)
+        # Add a concentration value.
         concentration: int = self.concentration(code)
+        # Add a size value.
         size: int = code.shape[0]
 
+        # Add a regular secondary structure.
         if peitsch in self.srr:
             ssr: str = self.ssr[peitsch]
+        # In case of not corresponding SSR found.
         else:
             ssr: str = "N"
 
+        # Number of Peitsch code found in a "corpus".
         if peitsch in self.characteristic:
             representative: int = self.characteristic[peitsch][4] + 1
         else:
@@ -145,8 +157,10 @@ class Peitsch:
 
         self.characteristic[peitsch] = [code, concentration, size, ssr,
                                         representative]
-        self.peitsch = np.append(self.peitsch, code)
+        self.peitsch = np.append(self.peitsch, peitsch)
         self.size += 1
+
+        return self
 
     def concentration(self, code: "np.array[bool]") -> int:
         """Compute the concentration of strong hydrophobic residues in a given
