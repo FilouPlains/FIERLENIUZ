@@ -41,6 +41,8 @@ def peitsch_translator(data: object, max_size: int = 100) -> "list[list[str]]":
     power: object = np.power(two_vec, power_vec)
 
     shift: str = data[0][0].split("_")[0]
+    
+    print(np.unique(np.transpose(data)[1]))
 
     for line in tqdm(data, desc="TRANSLATING CODES"):
         # Get the length of the hydrophobic cluster.
@@ -49,7 +51,7 @@ def peitsch_translator(data: object, max_size: int = 100) -> "list[list[str]]":
         # Take the vector of 2 to the power of the power vector, then sum
         # the whole vector.
         peitsch_code: str = np.sum(power[0:length][line[1]])
-        
+
         # Get domain's ID.
         identifier: str = line[0].split("_")[0]
 

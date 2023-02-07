@@ -96,9 +96,9 @@ def parsing():
 
     parser.add_argument(
         "--mintf",
-        default=4,
+        default=30,
         type=int,
-        help="[integer] Minimum term frequency, by default 4."
+        help="[integer] Minimum term frequency, by default 30."
     )
 
     parser.add_argument(
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     hca_out: object = parse_hca_file(arg["input"])
     # Translate hydrophobic clusters into Peitsch code.
     peitsch: "list[list[int]]" = peitsch_translator(hca_out)
-
+    
     # Build model.
     peitsch2vec = gensim.models.Word2Vec(
         peitsch,

@@ -7,11 +7,12 @@ __date__ = "31/01/2023"
 __version__ = "1.0.1"
 __copyright__ = "CC BY-SA"
 
-# [N]
+#  [N]
 import numpy as np
 
 # [T]
 from tqdm import tqdm
+
 
 def parse_hca_file(path: str) -> object:
     """Parse a pyHCA `.out` file and output a numpy array.
@@ -49,13 +50,18 @@ def parse_hca_file(path: str) -> object:
 
             # Transform the line into a list.
             split_line: "list[str]" = line.split()
+
+            if len(split_line[-1]) <= 2:
+                continue
+
             # Keep the domain's ID and a numpy array as a bool type.
             read_in: "list[str]" = [domain_name + split_line[1],
                                     np.array([*split_line[-1]]) == "1"]
 
             hca_out += [read_in]
-    
+
     return np.asarray(hca_out, dtype=object)
+
 
 if __name__ == "__main__":
     # File emplacement.
