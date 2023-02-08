@@ -142,7 +142,7 @@ if __name__ == "__main__":
     charact_list: "list[list]" = []
 
     for key in tqdm(peitsch2vec.wv.index_to_key, "SAVING CHARACTERISTICS"):
-        charact_list += [[[key] + peitsch_manip.characteristic[int(key)]]]
+        charact_list += [[key] + peitsch_manip.characteristic[int(key)]]
 
     # Save the words data.
     charact_data_path: str = os.path.join(arg["output"],
