@@ -18,8 +18,6 @@ import os
 from multiprocessing import cpu_count
 # [S]
 from sys import exit as sysexit
-# [T]
-from textwrap import dedent
 
 def parsing():
     """This function call the parser to get all necessary program's arguments.

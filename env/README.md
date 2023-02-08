@@ -18,3 +18,7 @@ conda activate fierlenius
 | :--------- | :---------: |
 | tqdm       |  `4.64.1`   |
 | numpy      |  `1.23.5`   |
+| gensim     |   `4.2.0`   |
+| matplotlib |   `3.6.2`   |
+| matplotlib |   `0.1.2`   |
+| plotly     |   `5.9.0`   |
