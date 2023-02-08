@@ -44,6 +44,12 @@ from tqdm import tqdm
 
 
 if __name__ == "__main__":
+    # =====================
+    #
+    # PROGRAM INITILIZATION
+    #
+    # =====================
+
     introduction: str = """
     ███████╗██╗███████╗██████╗ ██╗     ███████╗███╗   ██╗██╗██╗   ██╗███████╗
     ██╔════╝██║██╔════╝██╔══██╗██║     ██╔════╝████╗  ██║██║██║   ██║██╔════╝
@@ -67,6 +73,12 @@ if __name__ == "__main__":
     corpus: "list[list[str]]" = []
     sentence: "list[str]" = []
     shift: str = ""
+
+    # =================
+    #
+    # MAKING THE CORPUS
+    #
+    # =================
 
     for i, line in enumerate(tqdm(hca_out, "         MAKING CORPUS")):
         # Getting Peitsch code.
@@ -105,6 +117,12 @@ if __name__ == "__main__":
     # Final sentence addition.
     corpus += [sentence]
 
+    # =======================
+    #
+    # TRAINING WORD2VEC MODEL
+    #
+    # =======================
+
     # Build model.
     peitsch2vec = gensim.models.Word2Vec(
         corpus,
@@ -125,28 +143,59 @@ if __name__ == "__main__":
         epochs=arg["epochs"]
     )
 
+    # ===========
+    #
+    # SAVING DATA
+    #
+    # ===========
+
     # Get actual data and time.
     date: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Save the compute model.
+    # ======================
+    # SAVE THE COMPUTE MODEL
+    # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
     peitsch2vec.save(model_path)
 
-    # Save the words data.
+    # ===================
+    # SAVE THE WORDS DATA
+    # ===================
     word_data_path: str = os.path.join(arg["output"], f"embedding_{date}.npy")
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
     np.save(word_data_path, word_data, allow_pickle=True)
 
+    # ========================
+    # SAVE THE CHARACTERISTICS
+    # ========================
     charact_list: "list[list]" = []
 
     for key in tqdm(peitsch2vec.wv.index_to_key, "SAVING CHARACTERISTICS"):
         charact_list += [[key] + peitsch_manip.characteristic[int(key)]]
 
-    # Save the words data.
     charact_data_path: str = os.path.join(arg["output"],
                                           f"characteristics_{date}.npy")
-    # Convert the embeddings into float64.
+    # Creating the numpy arrays.
     charact_data: object = np.array(charact_list)
     np.save(charact_data_path, charact_data, allow_pickle=True)
+
+    # =========================
+    # SAVE THE EMBEDDING MATRIX
+    # =========================
+    embedding_path: str = os.path.join(arg["output"],
+                                       f"matrix_embedding_{date}.npy")
+    # Create a matrix with embedding only.
+    matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
+                                      peitsch2vec.wv.vectors.T)
+    np.save(embedding_path, matrix_embedding, allow_pickle=True)
+
+    # ======================
+    # SAVE THE COSINE MATRIX
+    # ======================
+    cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
+    # Create a matrix with cosine distance vectors.
+    cosine: object = peitsch2vec.wv.get_normed_vectors()
+    matrix_cosine: object = np.dot(cosine, cosine.T)
+    np.save(cosine_path, matrix_cosine, allow_pickle=True)
