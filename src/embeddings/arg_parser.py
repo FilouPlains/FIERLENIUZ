@@ -1,10 +1,9 @@
-"""Generates embedding vector for a given corpus.
+"""Parse given arguments and do some test to see if there are correct or not.
 """
 
 
 __authors__ = ["ROUAUD Lucas"]
-__contact__ = ["elodie.duprat@sorbonne-universite.fr",
-               "lucas.rouaud@gmail.com"]
+__contact__ = ["lucas.rouaud@gmail.com"]
 __date__ = "03/02/2023"
 __version__ = "1.0.0"
 __copyright__ = "CC BY-SA"

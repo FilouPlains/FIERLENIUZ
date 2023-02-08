@@ -1,4 +1,9 @@
 """Generates embedding vector for a given corpus.
+
+Usage
+-----
+    Enter in the terminal `python3 src/embeddings/peitsch2vec.py --help` to get
+    the detailed help generate by `argparse`.
 """
 
 
@@ -6,7 +11,7 @@ __authors__ = ["DUPRAT Élodie", "ROUAUD Lucas"]
 __contact__ = ["elodie.duprat@sorbonne-universite.fr",
                "lucas.rouaud@gmail.com"]
 __date__ = "03/02/2023"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __copyright__ = "CC BY-SA"
 
 # ==================================================

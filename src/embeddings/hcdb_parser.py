@@ -1,12 +1,12 @@
-"""Generates embedding vector for a given corpus.
+"""Parse a hydrophobic cluster (HC) database, which have to be in a `.csv`
+format.
 """
 
 
 __authors__ = ["ROUAUD Lucas"]
-__contact__ = ["elodie.duprat@sorbonne-universite.fr",
-               "lucas.rouaud@gmail.com"]
+__contact__ = ["lucas.rouaud@gmail.com"]
 __date__ = "03/02/2023"
-__version__ = "1.1.0"
+__version__ = "1.0.0"
 __copyright__ = "CC BY-SA"
 
 # [T]
