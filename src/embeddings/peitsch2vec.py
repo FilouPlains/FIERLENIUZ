@@ -90,7 +90,10 @@ if __name__ == "__main__":
         if charact[0].shape[0] <= arg["minlen"]:
             continue
         # Checking the number of total cluster.
-        if charact[-1] <= arg["mintf"] or charact[-1] >= arg["maxtf"]:
+        if charact[-1] <= arg["mintf"]:
+            continue
+        if charact[-1] >= arg["maxtf"]:
+            print(charact[-1])
             continue
 
         # Initialisation.
@@ -156,7 +159,7 @@ if __name__ == "__main__":
     # SAVE THE COMPUTE MODEL
     # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    peitsch2vec.save(model_path)
+    # peitsch2vec.save(model_path)
 
     # ===================
     # SAVE THE WORDS DATA
@@ -165,7 +168,7 @@ if __name__ == "__main__":
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
-    np.save(word_data_path, word_data, allow_pickle=True)
+    # np.save(word_data_path, word_data, allow_pickle=True)
 
     # ========================
     # SAVE THE CHARACTERISTICS
@@ -179,7 +182,7 @@ if __name__ == "__main__":
                                           f"characteristics_{date}.npy")
     # Creating the numpy arrays.
     charact_data: object = np.array(charact_list)
-    np.save(charact_data_path, charact_data, allow_pickle=True)
+    # np.save(charact_data_path, charact_data, allow_pickle=True)
 
     # =========================
     # SAVE THE EMBEDDING MATRIX
@@ -189,7 +192,7 @@ if __name__ == "__main__":
     # Create a matrix with embedding only.
     matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
                                       peitsch2vec.wv.vectors.T)
-    np.save(embedding_path, matrix_embedding, allow_pickle=True)
+    # np.save(embedding_path, matrix_embedding, allow_pickle=True)
 
     # ======================
     # SAVE THE COSINE MATRIX
@@ -198,4 +201,4 @@ if __name__ == "__main__":
     # Create a matrix with cosine distance vectors.
     cosine: object = peitsch2vec.wv.get_normed_vectors()
     matrix_cosine: object = np.dot(cosine, cosine.T)
-    np.save(cosine_path, matrix_cosine, allow_pickle=True)
+    # np.save(cosine_path, matrix_cosine, allow_pickle=True)
