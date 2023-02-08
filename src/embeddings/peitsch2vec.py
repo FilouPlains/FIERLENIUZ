@@ -130,14 +130,14 @@ if __name__ == "__main__":
 
     # Save the compute model.
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    # peitsch2vec.save(model_path)
+    peitsch2vec.save(model_path)
 
     # Save the words data.
     word_data_path: str = os.path.join(arg["output"], f"embedding_{date}.npy")
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
-    # np.save(word_data_path, word_data, allow_pickle=True)
+    np.save(word_data_path, word_data, allow_pickle=True)
 
     charact_list: "list[list]" = []
 
@@ -149,4 +149,4 @@ if __name__ == "__main__":
                                           f"characteristics_{date}.npy")
     # Convert the embeddings into float64.
     charact_data: object = np.array(charact_list)
-    # np.save(charact_data_path, charact_data, allow_pickle=True)
+    np.save(charact_data_path, charact_data, allow_pickle=True)

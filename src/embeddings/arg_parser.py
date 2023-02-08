@@ -38,12 +38,15 @@ def parsing():
     # Description of the program given when the help is cast.
     DESCRIPTION: str = ("Program to compute 'words embedding' with given "
                         "Peitsch code. An command example, when you are at "
-                        "the project's root (FIERLENIUS/) is: $ python3 "
-                        "peitsch2vec.py -i data/hace.out -o data/mintf_30/ -d "
-                        "data/HCDB_summary.csv")
+                        "the project's root (FIERLENIUS/) is:\n\n    "
+                        "$ python3 peitsch2vec.py -i data/hace.out -o "
+                        "data/mintf_30/ -d data/HCDB_summary.csv")
 
     # Setup the arguments parser object.
-    parser: object = argparse.ArgumentParser(description=DESCRIPTION)
+    parser: object = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        formatter_class=argparse.RawTextHelpFormatter
+    )
 
     # ==========
     #
@@ -56,7 +59,7 @@ def parsing():
         dest="input",
         required=True,
         type=str,
-        help="['.out'] A pyHCA segmentation results file."
+        help="[[MANDATORY]]\n    ['.out'] A pyHCA segmentation results file."
     )
 
     parser.add_argument(
@@ -64,7 +67,7 @@ def parsing():
         dest="output",
         required=True,
         type=str,
-        help="A folder where the results will be stored."
+        help="[[MANDATORY]]\n    A folder where the results will be stored."
     )
 
     parser.add_argument(
@@ -72,7 +75,7 @@ def parsing():
         dest="hcdb",
         required=True,
         type=str,
-        help="['.csv'] The HC database path."
+        help="[[MANDATORY]]\n    ['.csv'] The HC database path."
     )
 
     # == OPTIONAL.
@@ -143,7 +146,7 @@ def parsing():
         required=False,
         action="store_true",
         help=("If used, output sentence by foldable segment and not by "
-              "domain. By default it is not used, so do it by domain.")
+              "domain. By default this option inactivated.")
     )
 
     # Transform the input into a dictionary with arguments as key.
