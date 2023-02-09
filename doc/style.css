@@ -1,0 +1,57 @@
+body {
+    background-color: #2e2e3e;
+    font-family: sans-serif;
+    color: white;
+    margin: 0;
+    padding: 2cm;
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    text-decoration: none;
+    color: #aeaeff;
+}
+
+nav {
+    margin-top: 3em;
+}
+
+li {
+    margin-top: 2em;
+    font-weight: bolder;
+}
+
+/* OVERRIDE JUPYTER NOTEBOOK STYLE */
+.jp-RenderedHTMLCommon,
+.jp-RenderedText pre,
+.jp-RenderedJavaScript pre,
+.jp-RenderedHTMLCommon pre,
+.jp-Notebook .jp-Cell:not(.jp-mod-active) .jp-InputPrompt {
+    color: white;
+}
+
+html, body.jp-Notebook {
+    background-color: #2e2e3e;
+}
+
+.highlight {
+    background: none;
+    color: white;
+}
+
+.jp-InputArea-editor {
+    background-color: #0f0f1f;
+    border: none;
+}
+
+.jp-RenderedText[data-mime-type="application/vnd.jupyter.stderr"] {
+    background-color: #3e0000;
+}
