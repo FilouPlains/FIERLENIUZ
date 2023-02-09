@@ -19,6 +19,7 @@ from multiprocessing import cpu_count
 # [S]
 from sys import exit as sysexit
 
+
 def parsing():
     """This function call the parser to get all necessary program's arguments.
 
@@ -88,14 +89,16 @@ def parsing():
         "--mintf",
         default=30,
         type=int,
-        help="[integer] Minimum term frequency, by default 30."
+        help=("[integer] Maximum term frequency, by default '30'. If 'None', "
+              "no threshold will be applied.")
     )
 
     parser.add_argument(
         "--maxtf",
-        default=1000,
+        default=None,
         type=int,
-        help="[integer] Maximum term frequency, by default 1000."
+        help=("[integer] Maximum term frequency, by default 'None'. If 'None', "
+              "no threshold will be applied.")
     )
 
     parser.add_argument(
@@ -191,8 +194,12 @@ def parsing():
         sysexit(f"\n[Err## 7] Ask number of CPU, {argument['cpu']}, is "
                 "inferior or equal to 0. Please change the input number.")
 
-    to_check: "list[str]" = ["epochs", "mintf", "maxtf", "minlen",
-                             "size", "window"]
+    to_check: "list[str]" = ["epochs","minlen", "size", "window"]
+
+    if argument["mintf"] is not None:
+        to_check += ["mintf"]
+    if argument["maxtf"] is not None:
+        to_check += ["maxtf"]
 
     # Check that a bunch of values are > 0.
     for key in to_check:
@@ -200,11 +207,13 @@ def parsing():
             sysexit(f"\n[Err## 8] The given arguments '{key}' is incorrect. "
                     "You have to give an integer greater strictly than 0.")
 
-    if argument["mintf"] >= argument["maxtf"]:
-        sysexit("\n[Err## 9] The given arguments for '--mintf' "
-                f"(= {argument['mintf']}) and for '--maxtf' (= "
-                f"{argument['maxtf']}) are incorrect. You have to give an "
-                "integer so the maximum is strictly greater than the minimum.")
+    if argument["mintf"] is not None and argument["maxtf"] is not None:
+        if argument["mintf"] >= argument["maxtf"]:
+            sysexit("\n[Err## 9] The given arguments for '--mintf' "
+                    f"(= {argument['mintf']}) and for '--maxtf' (= "
+                    f"{argument['maxtf']}) are incorrect. You have to give an "
+                    "integer so the maximum is strictly greater than the "
+                    "minimum.")
 
     return argument
 
