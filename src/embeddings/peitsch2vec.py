@@ -185,21 +185,19 @@ if __name__ == "__main__":
     charact_data: object = np.array(charact_list)
     np.save(charact_data_path, charact_data, allow_pickle=True)
 
-    # =========================
-    # SAVE THE EMBEDDING MATRIX
-    # =========================
-    embedding_path: str = os.path.join(arg["output"],
-                                       f"matrix_embedding_{date}.npy")
-    # Create a matrix with embedding only.
-    matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
-                                      peitsch2vec.wv.vectors.T)
-    np.save(embedding_path, matrix_embedding, allow_pickle=True)
-
     # ======================
     # SAVE THE COSINE MATRIX
     # ======================
+    # Create a matrix with embedding only.
+    matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
+                                      peitsch2vec.wv.vectors.T)
+
+    # Create a matrix with normed vectors.
+    normed: object = peitsch2vec.wv.get_normed_vectors()
+    matrix_normed: object = np.dot(normed, normed.T)
+
+    # Create a matrix with cosine distance vectors and save it.
     cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
-    # Create a matrix with cosine distance vectors.
-    cosine: object = peitsch2vec.wv.get_normed_vectors()
-    matrix_cosine: object = np.dot(cosine, cosine.T)
+    matrix_cosine: object = np.divide(matrix_embedding, matrix_normed)
+
     np.save(cosine_path, matrix_cosine, allow_pickle=True)

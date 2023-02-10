@@ -40,14 +40,14 @@ class Peitsch:
         str
             What is going to be printed with `print()`.
         """
-        message: str = (f"Peitsch list of size {self.size}. Actual list is:"
-                        f"\n {self.peitsch}")
+        to_print: str = (f"Peitsch list of size {self.size}. Actual list is:"
+                         f"\n {self.peitsch}")
 
-        return message
+        return to_print
 
-    def __add__(self, code: "np.array[bool]") -> list:
+    def __add__(self, code: "np.array[bool]") -> object:
         """Add a (new) hydrophobic cluster to the object.
-
+        
         Parameters
         ----------
         code : np.array[bool]
@@ -55,8 +55,8 @@ class Peitsch:
 
         Returns
         -------
-        list
-            A list of characteristics link to the added hydrophobic cluster.
+        object
+            self.
         """
         # Add a Peitsch code.
         peitsch: str = self.translate(code)
@@ -85,13 +85,18 @@ class Peitsch:
 
         return self
 
-    def __iadd__(self, code) -> None:
+    def __iadd__(self, code) -> object:
         """Add a (new) hydrophobic cluster to the object.
 
         Parameters
         ----------
         code : np.array[bool]
             A hydrophobic cluster.
+
+        Returns
+        -------
+        object
+            self.
         """
         # Add a Peitsch code.
         peitsch: str = self.translate(code)

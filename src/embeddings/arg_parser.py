@@ -160,38 +160,38 @@ def parsing():
     # ===============================
     # Check the input file extension.
     if not argument["input"].endswith(".out"):
-        sysexit(f"\n[Err## 1] The input file '{argument['input']}' extension "
+        sysexit(f"\n[Err## 01] The input file '{argument['input']}' extension "
                 "is invalid. Please, give a '.out' file.")
 
     # Check if the input file exists.
     if not os.path.exists(argument["input"]):
-        sysexit(f"\n[Err## 2] The input file '{argument['input']}' does not "
+        sysexit(f"\n[Err## 02] The input file '{argument['input']}' does not "
                 "exist. Please check this given file.")
 
     # Check the input file extension.
     if not argument["hcdb"].endswith(".csv"):
-        sysexit(f"\n[Err## 3] The hcdb file '{argument['hcdb']}' extension "
+        sysexit(f"\n[Err## 03] The hcdb file '{argument['hcdb']}' extension "
                 "is invalid. Please, give a '.csv' file.")
 
     # Check if the input file exists.
     if not os.path.exists(argument["hcdb"]):
-        sysexit(f"\n[Err## 4] The input file '{argument['hcdb']}' does not "
+        sysexit(f"\n[Err## 04] The input file '{argument['hcdb']}' does not "
                 "exist. Please check this given file.")
 
     # Check if the output directory exists.
     if not os.path.exists(argument["output"]):
-        sysexit(f"\n[Err## 5] The output directory '{argument['output']}' "
+        sysexit(f"\n[Err## 05] The output directory '{argument['output']}' "
                 "does not exist. Please check this given directory.")
 
     # Check if the input number of CPU is correct.
     if argument["cpu"] > nb_cpu:
-        sysexit(f"\n[Err## 6] Ask number of CPU, {argument['cpu']}, is "
+        sysexit(f"\n[Err## 06] Ask number of CPU, {argument['cpu']}, is "
                 "superior to the number of CPU of this computer, which "
                 f"is {nb_cpu}. Please change the input number.")
 
     # Check if the input number of CPU is correct.
     if argument["cpu"] <= 0:
-        sysexit(f"\n[Err## 7] Ask number of CPU, {argument['cpu']}, is "
+        sysexit(f"\n[Err## 07] Ask number of CPU, {argument['cpu']}, is "
                 "inferior or equal to 0. Please change the input number.")
 
     to_check: "list[str]" = ["epochs","minlen", "size", "window"]
@@ -204,12 +204,12 @@ def parsing():
     # Check that a bunch of values are > 0.
     for key in to_check:
         if argument[key] <= 0:
-            sysexit(f"\n[Err## 8] The given arguments '{key}' is incorrect. "
+            sysexit(f"\n[Err## 08] The given arguments '{key}' is incorrect. "
                     "You have to give an integer greater strictly than 0.")
 
     if argument["mintf"] is not None and argument["maxtf"] is not None:
         if argument["mintf"] >= argument["maxtf"]:
-            sysexit("\n[Err## 9] The given arguments for '--mintf' "
+            sysexit("\n[Err## 09] The given arguments for '--mintf' "
                     f"(= {argument['mintf']}) and for '--maxtf' (= "
                     f"{argument['maxtf']}) are incorrect. You have to give an "
                     "integer so the maximum is strictly greater than the "
