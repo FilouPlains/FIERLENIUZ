@@ -16,8 +16,6 @@ class Peitsch:
     """
     # The size of `peitsch` or how many Peitsch code have been added.
     size: int = 0
-    # The position for the `next()` function.
-    position: int = -1
     # Hydrophobic cluster, concentration, cluster size, regular secondary
     # structure, representatives numbers.
     characteristic: "dict[str: list]" = {}
@@ -46,11 +44,6 @@ class Peitsch:
                         f"\n {self.peitsch}")
 
         return message
-
-    def reset_position(self) -> None:
-        """Set the position to `-1`. Act like a reset for `next()` function.
-        """
-        self.position = -1
 
     def __add__(self, code: "np.array[bool]") -> list:
         """Add a (new) hydrophobic cluster to the object.

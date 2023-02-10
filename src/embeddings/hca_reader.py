@@ -25,7 +25,7 @@ def parse_hca_file(path: str) -> object:
     Returns
     -------
     object
-        A numpy array to save.
+        A numpy array with parse data.
     """
     hca_out: object = []
 
