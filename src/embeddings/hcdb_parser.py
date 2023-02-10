@@ -24,7 +24,7 @@ def parse_hcdb(path: str) -> "dict[int: str]":
     Returns
     -------
     dict[int: str]
-        A dictonary containing in key a Peitsch code and in value a regular
+        A dictionary containing in key a Peitsch code and in value a regular
         secondary structure.
     """
     hcdb_dict: "dict[int: str]" = {}
