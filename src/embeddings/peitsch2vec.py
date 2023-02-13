@@ -128,6 +128,7 @@ if __name__ == "__main__":
                 shift = f"{line[0]}_{line[1]}"
             else:
                 shift = line[0]
+
         # Adding to the "sentence" when we have the same domain/segment.
         if shift == f"{line[0]}_{line[1]}":
             sentence += [f"{code}"]
@@ -144,7 +145,7 @@ if __name__ == "__main__":
 
     # Final sentence addition.
     corpus += [sentence]
-    
+
     # =======================
     #
     # TRAINING WORD2VEC MODEL
@@ -199,7 +200,7 @@ if __name__ == "__main__":
     # SAVE THE CHARACTERISTICS
     # ========================
     charact_list: "list[list]" = []
-    
+
     for key in tqdm(peitsch2vec.wv.index_to_key, "SAVING CHARACTERISTICS"):
         charact_list += [[key] + peitsch_manip.characteristic[int(key)]]
 
