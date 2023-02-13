@@ -11,7 +11,7 @@ __authors__ = ["DUPRAT Élodie", "ROUAUD Lucas"]
 __contact__ = ["elodie.duprat@sorbonne-universite.fr",
                "lucas.rouaud@gmail.com"]
 __date__ = "03/02/2023"
-__version__ = "1.2.0"
+__version__ = "1.5.0"
 __copyright__ = "CC BY-SA"
 
 # ==================================================
@@ -129,7 +129,7 @@ if __name__ == "__main__":
             else:
                 shift = line[0]
         # Adding to the "sentence" when we have the same domain/segment.
-        if shift == line[0]:
+        if shift == f"{line[0]}_{line[1]}":
             sentence += [f"{code}"]
         # Adding to the "corpus" when we have a different domain/segment.
         else:
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     # Final sentence addition.
     corpus += [sentence]
-
+    
     # =======================
     #
     # TRAINING WORD2VEC MODEL
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     # SAVE THE COMPUTE MODEL
     # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    # peitsch2vec.save(model_path)
+    peitsch2vec.save(model_path)
 
     # ===================
     # SAVE THE WORDS DATA
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     # SAVE THE CHARACTERISTICS
     # ========================
     charact_list: "list[list]" = []
-
+    
     for key in tqdm(peitsch2vec.wv.index_to_key, "SAVING CHARACTERISTICS"):
         charact_list += [[key] + peitsch_manip.characteristic[int(key)]]
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
                                           f"characteristics_{date}.npy")
     # Creating the numpy arrays.
     charact_data: object = np.array(charact_list)
-    np.save(charact_data_path, charact_data, allow_pickle=True)
+    # np.save(charact_data_path, charact_data, allow_pickle=True)
 
     # ======================
     # SAVE THE COSINE MATRIX
