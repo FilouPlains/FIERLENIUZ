@@ -7,7 +7,9 @@ body {
 }
 
 nav a,
-.jp-RenderedHTMLCommon nav a {
+.jp-RenderedHTMLCommon nav a,
+nav a:link,
+.jp-RenderedHTMLCommon nav a:link {
     font-size: 1.2em;
     color: white;
     text-decoration: none;
