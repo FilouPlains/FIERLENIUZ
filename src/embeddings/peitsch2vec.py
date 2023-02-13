@@ -43,6 +43,30 @@ from peitsch import Peitsch
 from tqdm import tqdm
 
 
+def matrix_normed(matrix: object) -> object:
+    """Return a product normalized matrix.
+
+    Parameters
+    ----------
+    matrix : object
+        The matrix to be normalized.
+
+    Returns
+    -------
+    object
+        A product of the normalized matrix.
+    """
+    # Create a normalized vector.
+    norm_vect: object = np.linalg.norm(matrix, axis=0)
+
+    # Repeat the vector to have a matrix.
+    norm_matrix: object = np.array(list(norm_vect) * norm_vect.shape[0])
+    norm_matrix = norm_matrix.reshape((matrix.shape[0], matrix.shape[0]))
+
+    # Create a product matrix (between normal and transpose one).
+    return np.multiply(norm_matrix, norm_matrix.T)
+
+
 if __name__ == "__main__":
     # =====================
     #
@@ -160,7 +184,7 @@ if __name__ == "__main__":
     # SAVE THE COMPUTE MODEL
     # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    peitsch2vec.save(model_path)
+    # peitsch2vec.save(model_path)
 
     # ===================
     # SAVE THE WORDS DATA
@@ -192,12 +216,8 @@ if __name__ == "__main__":
     matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
                                       peitsch2vec.wv.vectors.T)
 
-    # Create a matrix with normed vectors.
-    normed: object = peitsch2vec.wv.get_normed_vectors()
-    matrix_normed: object = np.dot(normed, normed.T)
-
     # Create a matrix with cosine distance vectors and save it.
     cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
-    matrix_cosine: object = np.divide(matrix_embedding, matrix_normed)
-
+    matrix_cosine: object = np.divide(matrix_embedding,
+                                      matrix_normed(matrix_embedding))
     np.save(cosine_path, matrix_cosine, allow_pickle=True)
