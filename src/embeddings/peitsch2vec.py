@@ -125,12 +125,18 @@ if __name__ == "__main__":
         if shift == "":
             # To change sentence by segment or by domain.
             if arg["segment"]:
-                shift = f"{line[0]}_{line[1]}"
+                shift: str = f"{line[0]}_{line[1]}"
             else:
-                shift = line[0]
+                shift: str = line[0]
+
+        # To read each line to get when we change of domain/segment.
+        if arg["segment"]:
+            read_domain: str = f"{line[0]}_{line[1]}"
+        else:
+            read_domain: str = line[0]
 
         # Adding to the "sentence" when we have the same domain/segment.
-        if shift == f"{line[0]}_{line[1]}":
+        if shift == read_domain:
             sentence += [f"{code}"]
         # Adding to the "corpus" when we have a different domain/segment.
         else:
@@ -208,7 +214,7 @@ if __name__ == "__main__":
                                           f"characteristics_{date}.npy")
     # Creating the numpy arrays.
     charact_data: object = np.array(charact_list)
-    # np.save(charact_data_path, charact_data, allow_pickle=True)
+    np.save(charact_data_path, charact_data, allow_pickle=True)
 
     # ======================
     # SAVE THE COSINE MATRIX
