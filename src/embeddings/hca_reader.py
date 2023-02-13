@@ -4,7 +4,7 @@
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
 __date__ = "31/01/2023"
-__version__ = "1.0.2"
+__version__ = "1.1.2"
 __copyright__ = "CC BY-SA"
 
 #  [N]
@@ -33,7 +33,7 @@ def parse_hca_file(path: str) -> object:
     with open(path, "r", encoding="utf-8") as file:
         domain_name: str = ""
 
-        for line in tqdm(file, desc="          PARSING FILE"):
+        for line in tqdm(list(file), desc="          PARSING FILE"):
             # To keep the domain's ID.
             if line.startswith(">"):
                 domain_name = line.split()[0][1:]

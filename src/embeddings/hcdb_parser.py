@@ -6,7 +6,7 @@ format.
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
 __date__ = "03/02/2023"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __copyright__ = "CC BY-SA"
 
 # [T]
@@ -31,7 +31,7 @@ def parse_hcdb(path: str) -> "dict[int: str]":
 
     # Read the database.
     with open(path, "r", encoding="utf-8") as file:
-        for line in tqdm(file, "      PARSING DATABASE"):
+        for line in tqdm(list(file), "      PARSING DATABASE"):
             # Skipping the first line.
             if line[0] == "#":
                 continue
