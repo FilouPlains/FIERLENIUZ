@@ -6,7 +6,15 @@ body {
     padding: 2cm;
 }
 
+section {
+    background-color: #585887;
+    padding: 1em;
+    border-radius: 10px;
+    margin: 2em 1em;
+}
+
 nav a,
+h1 a,
 .jp-RenderedHTMLCommon nav a,
 nav a:link,
 .jp-RenderedHTMLCommon nav a:link {
@@ -19,12 +27,20 @@ nav a:link,
     border-radius: 30px;
 }
 
+pre {
+    background-color: #0006;
+    padding: 1em;
+    font-size: 1.2em;
+}
+
+h1 a:hover,
 nav a:hover,
 .jp-RenderedHTMLCommon nav a:hover {
     text-decoration: underline;
     background-color: #dd7b8e;
 }
 
+h1 a:visited,
 nav a:visited,
 .jp-RenderedHTMLCommon nav a:visited {
     text-decoration: none;
