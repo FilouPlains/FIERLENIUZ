@@ -57,14 +57,14 @@ def matrix_normed(matrix: object) -> object:
         A product of the normalized matrix.
     """
     # Create a normalized vector.
-    norm_vect: object = np.linalg.norm(matrix, axis=0)
+    norm_vect: object = np.linalg.norm(matrix, axis=1)
 
     # Repeat the vector to have a matrix.
     norm_matrix: object = np.array(list(norm_vect) * norm_vect.shape[0])
     norm_matrix = norm_matrix.reshape((matrix.shape[0], matrix.shape[0]))
-
+    
     # Create a product matrix (between normal and transpose one).
-    return np.multiply(norm_matrix, norm_matrix.T)
+    return np.multiply(norm_matrix, np.rot90(norm_matrix, k=3))
 
 
 if __name__ == "__main__":
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # SAVE THE COMPUTE MODEL
     # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    peitsch2vec.save(model_path)
+    # peitsch2vec.save(model_path)
 
     # ===================
     # SAVE THE WORDS DATA
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
-    np.save(word_data_path, word_data, allow_pickle=True)
+    # np.save(word_data_path, word_data, allow_pickle=True)
 
     # ========================
     # SAVE THE CHARACTERISTICS
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                                           f"characteristics_{date}.npy")
     # Creating the numpy arrays.
     charact_data: object = np.array(charact_list)
-    np.save(charact_data_path, charact_data, allow_pickle=True)
+    # np.save(charact_data_path, charact_data, allow_pickle=True)
 
     # ======================
     # SAVE THE COSINE MATRIX
@@ -222,9 +222,9 @@ if __name__ == "__main__":
     # Create a matrix with embedding only.
     matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
                                       peitsch2vec.wv.vectors.T)
-
+    
     # Create a matrix with cosine distance vectors and save it.
     cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
     matrix_cosine: object = np.divide(matrix_embedding,
-                                      matrix_normed(matrix_embedding))
-    np.save(cosine_path, matrix_cosine, allow_pickle=True)
+                                      matrix_normed(peitsch2vec.wv.vectors))
+    # np.save(cosine_path, matrix_cosine, allow_pickle=True)
