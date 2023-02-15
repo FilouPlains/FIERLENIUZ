@@ -6,6 +6,11 @@ body {
     padding: 2cm;
 }
 
+body#main {
+    background-color: white;
+    color: black;
+}
+
 section {
     background-color: #585887;
     padding: 1em;
@@ -13,8 +18,23 @@ section {
     margin: 2em 1em;
 }
 
+body#main section {
+    color:black;
+    background-color: white;
+    padding: 0em 0em 1em 0em;
+    border-radius: 0;
+    margin: 2em 1em;
+    border: 5px solid black;
+    text-align: justify;
+    text-justify: auto;
+    hyphens: manual;
+}
+
+section div {
+    padding: 1em;
+}
+
 nav a,
-h1 a,
 .jp-RenderedHTMLCommon nav a,
 nav a:link,
 .jp-RenderedHTMLCommon nav a:link {
@@ -27,20 +47,26 @@ nav a:link,
     border-radius: 30px;
 }
 
-pre {
-    background-color: #0006;
-    padding: 1em;
-    font-size: 1.2em;
+body#main div.pre {
+    background-color: black;
+    color: white;
+    font-family: 'DejaVu Sans Mono', Courier, monospace;
+    white-space: pre;
 }
 
-h1 a:hover,
+body#main code {
+    font-size: 1.2em;
+    background-color: black;
+    color: white;
+    padding: 0 0.5em;;
+}
+
 nav a:hover,
 .jp-RenderedHTMLCommon nav a:hover {
     text-decoration: underline;
     background-color: #dd7b8e;
 }
 
-h1 a:visited,
 nav a:visited,
 .jp-RenderedHTMLCommon nav a:visited {
     text-decoration: none;
@@ -48,13 +74,37 @@ nav a:visited,
     background-color: #8a041f;
 }
 
+body#main section h1 {
+    color: white;
+    background-color: black;
+    width: calc(100% - 2em);
+    padding: 1em;
+    margin: 0;
+}
+
+body#main section a h1 {
+    display: inline-block;
+    color: white;
+    text-decoration: underline 2pt;
+}
+
+body#main section a:hover h1 {
+    background-color: #2e2e2e;
+}
+
 nav {
     margin-top: 3em;
 }
 
-li {
+body:not(#main) li {
     margin-top: 2em;
     font-weight: bolder;
+}
+
+body#main p.img {
+    text-align: center;
+    font-style: italic;
+    color: #777;
 }
 
 nav li {

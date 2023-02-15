@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="jupyter_logo_icon.svg" />
 </head>
 
-<body>
+<body id="main">
     <header style="text-align: center;">
         <h1>⌛️ FIERLENIUS 🦙</h1>
 
@@ -18,31 +18,140 @@
         <a href="https://www.python.org/downloads/release/python-397/"><img src="https://img.shields.io/badge/python-%E2%89%A5_3.10.8-blue.svg" alt="Python 3.10.8"></a>
         <a href="https://docs.conda.io/en/latest/miniconda.html"><img src="https://img.shields.io/badge/miniconda-%E2%89%A5_22.11.1-green.svg" alt="Conda 22.11.1"></a>
         <a href="https://github.com/FilouPlains/FIERLENIUS"><img src="https://img.shields.io/github/last-commit/FilouPlains/FIERLENIUS.svg" alt="GitHub last commit"></a>
-        <img src="https://img.shields.io/github/stars/FilouPlains/FIERLENIUS.svg?style=social" alt="GitHub stars">
     </header>
 
     <main>
         <section>
-            <h1><em>Word embedding</em></h1>
+            <h1>Natural language processing (NLP)</h1>
+            
+            <div>
+                <h2>Overall functioning of the Word2Vec package</h2>
 
-            <p>Let's considerate a corpus. In it, there are sentences like so:</p>
-            <pre>
-                I am a sentence. <br />
-                I can be analyzed any time!
-            </pre>
+                <p>Let's considerate a corpus. In it, there are sentences like so:</p>
+                <div class="pre">
+I am a sentence.
+I can be analyzed any time!
+                </div>
+
+                <p>
+                    In NLP, we would like to be able to guess words context. Why?
+                    Because like so, we would be able to bring  closer together
+                    words with the same meaning, while words with different ones
+                    while be discarded. In order to represent this kind of context,
+                    we can use vectors:
+                    <ul>
+                        <li>
+                            With same context, the <code>dot product</code> of two
+                            vector while give a small value (in case of measuring 
+                            a distance).
+                        </li>
+                        <li>
+                            With same context, the <code>dot product</code> of two
+                            vector while give a high value (in case of measuring 
+                            a distance).
+                        </li>
+                    </ul>
+                </p>
+
+                <p>
+                    To make this vectors, we can use neural network with <strong>
+                    Word2Vec</strong>. Done by <em>Mikolov et al. in 2013 (arXiv)</em>,
+                    this allow to give in input a corpus on which the neural network
+                    will trained, to then output our vectors, known as embeddings.
+                    First, to define a context, we can see that this is the words,
+                    in in limited windows, around a central word. Like so:
+                </p>
+                <p class="img">
+                    <img src="svg/context_scheme.svg" />
+                    <br />
+                    The red word is the central word. Its context is defined by 
+                    is surrounding, the black word.
+                </p>
+                <p>
+                    So here, we base ourself on the surrounding of &ldquo;a&rdquo;
+                    to guess its context and meaning. So next, for our corpus, we
+                    are going to give it to the neural network, which is a CBOW
+                    architecture:
+                </p>
+                <p class="img">
+                    <img src="svg/CBOW.svg" style="width:25cm;" />
+                    <br />
+                    Here, each context word are used to output a new vector: the
+                    central word. For this, we update our weight to match the hot
+                    encoding embedding. With a loss function (average negative log
+                    likelihood), we minimize it to increase the prediction accuracy.
+                    In other words, we combine all context vector to output the
+                    central vector words with weight on those first ones.
+                </p>
+
+                <h2>Application on pyHCA</h2>
+
+                <p>
+                    <code>pyHCA</code> is a software that cut a sequence in foldable
+                    part. These cutting are based on the density in hydrophobic
+                    cluster. With those hydrophobic cluster, we can obtain Peitsch
+                    code. Based on this, we can make a corpus composed of Peitsch
+                    code. The dataset used will be the SCOPe one. We only keep the
+                    globular soluble domain. Like so, we can considerate two types
+                    of sentences:
+
+                    <ol>
+                        <li>One sentence = one domain.</li>
+                        <li>One sentence = foldable domaine.</li>
+                    </ol>
+                </p>
+                <p class="img">
+                    <img src="svg/domain_to_peitsch.svg" style="width:12cm;" />
+                    <br />
+                    <strong>Top line:</strong> Domain with, in bold, the foldable
+                    segment. <strong>Middle line:</strong> The hydrophobic cluster.
+                    <strong>Bottom line:</strong> Code Peitsch.
+                </p>
+                <div class="pre">
+|———————————————————————————————————————————|
+|                   DOMAIN                  |
+|———————————————————————————————————————————|
+| FOLDABLE SEGMENT 1 |  FOLDABLE SEGMENT 2  |
+|———————————————————————————————————————————|
+|   code 1 code 2    | code 3 code 4 code 5 |
+|———————————————————————————————————————————|
+
+>Cutting by [DOMAIN]:
+    - SENTENCE 1 = code 1 code 2 code 3 code 4 code 5
+    
+>Cutting by [FOLDABLE SEGMENT]:
+    - SENTENCE 1 = code 1 code 2
+    - SENTENCE 2 = code 3 code 4 code 5
+                </div>
+                <p>
+                    The TOP representation indicates how, based on domain or foldable
+                    segment, we can obtain to set of sentences. Then, we give this
+                    corpus to Word2Vec to obtain our embedding. With these embedding,
+                    we can perform 2D projections or cosine distance on matrix.
+                </p>
+            </div>
         </section>
 
         <section>
-            <h1><a href="embedding/projection.html">Projection</a></h1>
+            <a href="embedding/projection.html"><h1>Projection</h1></a>
+
+            <div>
+            </div>
         </section>
 
         <section>
-            <h1><a href="embedding/matrix.html">Matrix</a></h1>
-            <p>⚠️ <strong>HEAVY LOADING PAGE, DUE TO THE LOADING HEATMAP</strong></p>
+            <a href="embedding/matrix.html"><h1>Matrix</h1></a>
+
+            <div>
+                <p>⚠️ <strong>HEAVY LOADING PAGE, DUE TO THE LOADING HEATMAP</strong></p>
+            </div>
         </section>
 
         <section>
-            <h1><a href="embedding/comparing_distribution.html">Distribution</a></h1>
+            <a href="embedding/comparing_distribution.html"><h1>Distribution</h1></a>
+
+            <div>
+            </div>
         </section>
     </main>
 </body>
