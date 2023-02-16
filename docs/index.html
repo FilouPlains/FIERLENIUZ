@@ -6,6 +6,9 @@
     <title>FIERLENIUS</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/x-icon" href="jupyter_logo_icon.svg" />
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body id="main">
@@ -144,6 +147,42 @@ I can be analyzed any time!
 
             <div>
                 <p>⚠️ <strong>HEAVY LOADING PAGE, DUE TO THE LOADING HEATMAP</strong></p>
+                <h2>Cosine similarity</h2>
+
+                <p>
+                    With the obtain embedding, it is possible to compute a cosine
+                    similarity like so :
+                    
+                    \[ cos(\theta) = \dfrac{\vec{A} \times \vec{B}}{\lVert \vec{A} \rVert \times \lVert \vec{B} \rVert} \]
+                    
+                    To explain simply, the top fraction compute the aforementioned
+                    similarity with a dot product. The more the value are similar,
+                    the more the angle will be null, the more it will tend to 1.
+                    The denominator is here to get rid of the vector size. After,
+                    to get the distance, we have to do:
+                    
+                    \[ distance = 1 - |cos(\theta)| \]
+                    
+                    So with this, when two Peitsch code will have a same context,
+                    the distance will tend to 0.
+                </p>
+
+                <h2>Matrix interpretation</h2>
+
+                <p>
+                    To <strong>interprate the matrix</strong>, we have to understand
+                    what they are. It's about a distance obtain with a cosine similarity.
+                    This last one was also obtain with the <em>words embeddings</em>,
+                    describe in the first part. What the embeddings give is a context.
+                    When two words have the same one, their similarities are high,
+                    which mean that their distance is low. So two same words have
+                    a similraity of 1 and a distance of 0. This mean that, when
+                    two words have the same extact context, they are likely the
+                    same, in other words synonyms. Here, because we have hydrophobics
+                    clusters, that means that those are interchangeable or substituable.
+                    So more a distance is high, more two hydrophobics clusters are
+                    different and not substituable and vice verse.
+                </p>
             </div>
         </section>
 
