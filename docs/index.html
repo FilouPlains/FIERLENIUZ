@@ -139,6 +139,79 @@ I can be analyzed any time!
             <a href="embedding/projection.html"><h1>Projection</h1></a>
 
             <div>
+                <h2>2D projection methods principle</h2>
+                <h3>PCA</h3>
+                
+                <p>
+                    The Principal Component Analysis is a method to reduce dimensionality
+                    of large dataset. In order to do so, we search components (vector-like)
+                    that maximizes the variance. If we imagine a ellipsoid (3D ellipse),
+                    this will mean seeking for the line going through the larger
+                    ellipsoid's axe.
+                </p>
+
+                <h3>MDS</h3>
+
+                <p>
+                    The Multidimensional scaling create an embedding space where
+                    the data dimension are reduced to 2. The MDS try to keep distance
+                    between two point. To do so, the MDS methods try to minimize:
+
+                    \[ J = \displaystyle\sum_{i,~j} \left( D_{ij} - d_{ij} \right)^2 \]
+
+                    With <code>D</code> the original distance between two points in the original
+                    space projections and <code>d</code> the new distance between
+                    the two points in the new space projections. The embedding try
+                    to to this. MDS is an iterative method.
+                </p>
+                
+                <h3>t-SNE</h3>
+
+                <p>
+                    For th t-SNE principle, there is some common points with MDS.
+                    Because, in a global view, they both try to minimize a criteria
+                    and output an embedding.
+                </p>
+                <p>
+                    The t-distributed Stochastic Neighbour Embedding start with
+                    a PCA before trying to find, iteratively the minimum of its
+                    criteria. Here, t-SNE try to keep the distance between neighbors.
+                    This allow to emphasize the data clustering. The criteria that
+                    is minimize is:
+
+                    \[ KL (P || Q) = \displaystyle\sum_{i \neq j} p_{ij} \times log \left( \dfrac{p_{ij}}{q_{ij}} \right) \]
+
+                    Which is a metric to evaluate a distance to see how distribution
+                    (probability) are different between P and Q. Those two are from
+                    the computation of distribution of hight and low dimensional
+                    objects. In other words, we try to give probabilities such as
+                    close objects have high probability value and vice verse.
+                </p>
+
+                <h3>UMAP</h3>
+                <p>
+                    Uniform Manifold Approximation and Projection is a method very
+                    similar to t-SNE. Its changed the way of gathering points together
+                    based on graph methods.
+                </p>
+                
+                <h3>Sammon mapping</h3>
+                <p>
+                    Sammon mapping is like MDS, but its try to preserve data structures,
+                    so the inter-point distance, much than MDS. The different between
+                    those methods are mainly due to the minimize function call Sammon's
+                    stress or error :
+
+                    \[ E = \dfrac{1}{\displaystyle\sum_{i < j} D_{ij}} \times \left( \displaystyle\sum_{i < j} \dfrac{\left( D_{ij} - d_{ij} \right)^2}{D_{ij}} \right)\]
+
+                    With <code>D</code> the original distance between two points in
+                    the original space projections and <code>d</code> the new distance
+                    between the two points in the new space projections.
+                </p>
+
+                <h2>Projection interpretation</h2>
+
+
             </div>
         </section>
 
@@ -183,6 +256,10 @@ I can be analyzed any time!
                     So more a distance is high, more two hydrophobics clusters are
                     different and not substituable and vice verse.
                 </p>
+                <p>
+                    <a href="embedding/matrix.html#Without---segment"><strong>Here,
+                    you can see an example of output matrix.</strong></a>
+                </p>
             </div>
         </section>
 
@@ -190,6 +267,45 @@ I can be analyzed any time!
             <a href="embedding/comparing_distribution.html"><h1>Distribution</h1></a>
 
             <div>
+                <h2>Testing two distributions in HCDB vs SCOPe</h2>
+                <h3>Testing data normality</h3>
+
+                <p>
+                    The distribution are shown in 
+                    <strong><a href="embedding/comparing_distribution.html#Plotting-commons-distributions">[this part]</a></strong>.
+                </p>
+                <p>
+                    In both case, the obtained p-value is strictly inferior to 0.001
+                    <strong>(so highly significant ***)</strong>. This means that
+                    the null hypothesis H0 is rejected, meaning that the data do
+                    not follow a normal distribution. This means that the test to
+                    effectuate next to test the distribution is a non-parametric
+                    one.
+                </p>
+                
+                <h3>Testing the distribution</h3>
+
+                <p>
+                    The Kolmogorov–Smirnov test check if two distributions are the
+                    same. In this case, the obtained p-value is strictly inferior
+                    to 0.001 <strong>(so highly significant ***)</strong>. This
+                    means that the null hypothesis H0 is rejected, meaning that
+                    the data do not follow the same distribution. Those results
+                    can be explained in two different ways:
+
+                    <ol>
+                        <li>
+                            Data from rarest sample (in other words, from high Peitsch
+                            code) are very different and instable. This influence
+                            a lot the data.
+                        </li>
+                        <li>
+                            The count of small Peitsch codes is more invariant.
+                            Also, we have more data in a case than the other,
+                            influencing also the distribution.
+                        </li>
+                    </ol>
+                </p>
             </div>
         </section>
     </main>
