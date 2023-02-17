@@ -12,32 +12,65 @@ Master 2 Bio-informatics at *Univerité de Paris*
 ![GitHub stars](https://img.shields.io/github/stars/FilouPlains/FIERLENIUS.svg?style=social)
 
 
-## Dependencies tree
+## 🧮 Dataset origin
+
+- **`dir.des.scope.2.08-stable.txt` :**
+    - Extract from the `SCOPe 2.08` database, download the `01/2023`.
+- **`hca.out` :**
+    - Extract from this Github repository: [DarkVador-HCA/Order-Disorder-continuum/blob/main/data/SCOPe/hca.out](https://github.com/DarkVador-HCA/Order-Disorder-continuum/blob/main/data/SCOPe/hca.out).
+- **`HCDB_summary.csv` :**
+    - Local database, version `02/2018`.
+- **`peitsch2vec/` :**
+    - Generate data with the script [`src/embeddings/peitsch2vec.py`](src/embeddings/peitsch2vec.py). In `peitsch2vec/default_domain/`, data have been generated without the option `--segment`, while in `peitsch2vec/default_segments/`, data have been generated with the option `--segment`.
+
+## 🌲 Dependencies tree
 
 ```bash
 $ tree -lF -h
 .
-├── [4.0K]  data/
-│   ├── [629K]  characteristic_data_2023-02-02_15-23-23.npy
-│   ├── [ 15M]  dir.des.scope.2.08-stable.txt
-│   ├── [4.4M]  hca.out
-│   ├── [4.6K]  HCDB_summary.csv
-│   ├── [4.5M]  model_2023-02-02_15-23-23.w2v
-│   └── [4.4M]  word_data_2023-02-02_15-23-23.npy
-├── [4.0K]  env/
-│   ├── [ 157]  fierlenius.yml
-│   └── [ 624]  README.md
-├── [1.5K]  README.md
-└── [4.0K]  src/
-    ├── [4.0K]  embeddings/
-    │   ├── [1.7K]  hca_reader.py
-    │   ├── [4.0K]  other_package/
-    │   │   └── [6.3K]  sammon.py
-    │   ├── [8.5K]  peitsch2vec.py
-    │   ├── [1.9K]  peitsch_translator.py
-    │   ├── [4.7M]  projection.html
-    │   └── [5.1M]  projection.ipynb
-    └── [4.0K]  msa/
-
-6 directories, 15 files
+├── [4.0K]  "data/"
+│   ├── [ 15M]  "dir.des.scope.2.08-stable.txt"
+│   ├── [4.4M]  "hca.out"
+│   ├── [4.6K]  "HCDB_summary.csv"
+│   └── [4.0K]  "peitsch2vec/"
+│       ├── [4.0K]  "default_domain/"
+│       │   ├── [ 26K]  "characteristics_2023-02-14_15-40-13.npy"
+│       │   ├── [762K]  "embedding_2023-02-14_15-40-13.npy"
+│       │   ├── [413K]  "matrix_cosine_2023-02-14_15-40-13.npy"
+│       │   └── [776K]  "model_2023-02-14_15-40-13.w2v"
+│       └── [4.0K]  "default_segments/"
+│           ├── [ 26K]  "characteristics_2023-02-14_15-40-13.npy"
+│           ├── [762K]  "embedding_2023-02-14_15-40-13.npy"
+│           ├── [413K]  "matrix_cosine_2023-02-14_15-40-13.npy"
+│           └── [776K]  "model_2023-02-14_15-40-13.w2v"
+├── [4.0K]  "docs/"
+│   ├── [4.0K]  "embedding/"
+│   │   ├── [5.0M]  "comparing_distribution.html"
+│   │   ├── [8.6M]  "matrix.html"
+│   │   └── [5.0M]  "projection.html"
+│   ├── [ 15K]  "index.html"
+│   ├── [7.2K]  "jupyter_logo_icon.svg"
+│   ├── [2.3K]  "style.css"
+│   └── [4.0K]  "svg/"
+│       ├── [ 27K]  "CBOW.svg"
+│       ├── [2.2K]  "context_scheme.svg"
+│       └── [5.1K]  "domain_to_peitsch.svg"
+├── [4.0K]  "env/"
+│   ├── [ 369]  "fierlenius.yml"
+│   └── [ 740]  "README.md"
+├── [1.5K]  "README.md"
+└── [4.0K]  "src/"
+    ├── [4.0K]  "embeddings/"
+    │   ├── [6.6K]  "arg_parser.py"
+    │   ├── [3.3K]  "domain.py"
+    │   ├── [2.2K]  "hca_reader.py"
+    │   ├── [1.1K]  "hcdb_parser.py"
+    │   ├── [4.0K]  "notebook/"
+    │   │   ├── [6.6M]  "comparing_distribution.ipynb"
+    │   │   ├── [ 15M]  "matrix.ipynb"
+    │   │   ├── [5.8M]  "projection.ipynb"
+    │   │   └── [6.3K]  "sammon.py"
+    │   ├── [7.4K]  "peitsch2vec.py"
+    │   └── [4.8K]  "peitsch.py"
+    └── [4.0K]  "msa/"
 ```
