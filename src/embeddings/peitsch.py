@@ -47,7 +47,7 @@ class Peitsch:
 
     def __add__(self, code: "np.array[bool]") -> object:
         """Add a (new) hydrophobic cluster to the object.
-        
+
         Parameters
         ----------
         code : np.array[bool]
@@ -60,32 +60,32 @@ class Peitsch:
         """
         # Add a Peitsch code.
         peitsch: str = self.translate(code)
-        # Add a concentration value.
-        concentration: int = self.concentration(code)
-        # Add a size value.
-        size: int = code.shape[0]
 
-        # Add a regular secondary structure.
-        if peitsch in self.ssr:
-            ssr: str = self.ssr[peitsch]
-        # In case of not corresponding SSR found.
+        if peitsch not in self.characteristic:
+            # Add a concentration value.
+            concentration: int = self.concentration(code)
+            # Add a size value.
+            size: int = code.shape[0]
+
+            # Add a regular secondary structure.
+            if peitsch in self.ssr:
+                ssr: str = self.ssr[peitsch]
+            # In case of not corresponding SSR found.
+            else:
+                ssr: str = "N"
+
+            self.characteristic[peitsch] = [code, concentration, size, ssr, 1,
+                                            [], [], [], []]
         else:
-            ssr: str = "N"
+            # Number of Peitsch code found in a "corpus".
+            self.characteristic[peitsch][4] += 1
 
-        # Number of Peitsch code found in a "corpus".
-        if peitsch in self.characteristic:
-            representative: int = self.characteristic[peitsch][4] + 1
-        else:
-            representative: int = 1
-
-        self.characteristic[peitsch] = [code, concentration, size, ssr,
-                                        representative]
         self.peitsch = np.append(self.peitsch, peitsch)
         self.size += 1
 
         return self
 
-    def __iadd__(self, code) -> object:
+    def __iadd__(self, code: "np.array[bool]") -> object:
         """Add a (new) hydrophobic cluster to the object.
 
         Parameters
@@ -100,26 +100,26 @@ class Peitsch:
         """
         # Add a Peitsch code.
         peitsch: str = self.translate(code)
-        # Add a concentration value.
-        concentration: int = self.concentration(code)
-        # Add a size value.
-        size: int = code.shape[0]
 
-        # Add a regular secondary structure.
-        if peitsch in self.ssr:
-            ssr: str = self.ssr[peitsch]
-        # In case of not corresponding SSR found.
+        if peitsch not in self.characteristic:
+            # Add a concentration value.
+            concentration: int = self.concentration(code)
+            # Add a size value.
+            size: int = code.shape[0]
+
+            # Add a regular secondary structure.
+            if peitsch in self.ssr:
+                ssr: str = self.ssr[peitsch]
+            # In case of not corresponding SSR found.
+            else:
+                ssr: str = "N"
+
+            self.characteristic[peitsch] = [code, concentration, size, ssr, 1,
+                                            [], [], [], []]
         else:
-            ssr: str = "N"
+            # Number of Peitsch code found in a "corpus".
+            self.characteristic[peitsch][4] += 1
 
-        # Number of Peitsch code found in a "corpus".
-        if peitsch in self.characteristic:
-            representative: int = self.characteristic[peitsch][4] + 1
-        else:
-            representative: int = 1
-
-        self.characteristic[peitsch] = [code, concentration, size, ssr,
-                                        representative]
         self.peitsch = np.append(self.peitsch, peitsch)
         self.size += 1
 
@@ -167,9 +167,15 @@ class Peitsch:
             The Peitsch code.
         """
         # A vector of power from 0 to n by 1.
-        power_vec: object = np.arange(0, code.shape[0])[code]
+        power_vec: object = np.arange(code.shape[0] - 1, -1, -1)[code]
         # A vector of 2.
         two_vec: object = np.full(code.shape[0], 2)[code]
         power: object = np.power(two_vec, power_vec)
-        
+
         return np.sum(power)
+
+    def add_domain(self, characteristic, code):
+        self.characteristic[code][-4] += [characteristic[0]]
+        self.characteristic[code][-3] += [characteristic[1]]
+        self.characteristic[code][-2] += [characteristic[2]]
+        self.characteristic[code][-1] += [characteristic[3]]

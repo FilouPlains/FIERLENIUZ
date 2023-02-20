@@ -88,10 +88,6 @@ if __name__ == "__main__":
 
     # Get data.
     hca_out, domain_data = parse_hca_file(arg["input"], arg["segment"])
-    
-    print(domain_data)
-    print(hca_out)
-    
     peitsch_manip: object = Peitsch(parse_hcdb("data/HCDB_summary.csv"))
 
     # Getting all PEITSCH data.
@@ -119,10 +115,10 @@ if __name__ == "__main__":
             continue
         # Checking the number of total cluster.
         if arg["mintf"] is not None:
-            if charact[-1] <= arg["mintf"]:
+            if charact[4] <= arg["mintf"]:
                 continue
         if arg["maxtf"] is not None:
-            if charact[-1] >= arg["maxtf"]:
+            if charact[4] >= arg["maxtf"]:
                 continue
 
         # Initialisation.
@@ -152,6 +148,8 @@ if __name__ == "__main__":
                 shift = f"{line[0]}_{line[1]}"
             else:
                 shift = line[0]
+        
+        peitsch_manip.add_domain(domain_data[read_domain], code)
 
     # Final sentence addition.
     corpus += [sentence]
