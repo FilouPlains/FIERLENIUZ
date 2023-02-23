@@ -3,7 +3,7 @@
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "07/02/2023"
+__date__ = "23s/02/2023"
 __version__ = "1.0.0"
 __copyright__ = "CC BY-SA"
 
