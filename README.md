@@ -14,11 +14,13 @@ Master 2 Bio-informatics at *Univerité de Paris*
 
 ## 🧮 Dataset origin
 
-- **`dir.des.scope.2.08-stable.txt` :**
-    - Extract from the `SCOPe 2.08` database, download the `01/2023`.
-- **`hca.out` :**
+- **`SCOPe_2.08_classification.txt` :**
+    - Extract from the `SCOPe 2.08` database, download the `01/2023`. Contains the classifications with the category. Only globular domains are kept.
+- **`SCOPe_2.08_95identity_globular.fasta` :**
+    - Extract from the `SCOPe 2.08` database, download the `02/2023`. Contains the classified sequences. Only globular domains are kept.
+- **`pyHCA_SCOPe_30identity.out` :**
     - Extract from this Github repository: [DarkVador-HCA/Order-Disorder-continuum/blob/main/data/SCOPe/hca.out](https://github.com/DarkVador-HCA/Order-Disorder-continuum/blob/main/data/SCOPe/hca.out).
-- **`HCDB_summary.csv` :**
+- **`HCDB_2018_summary_rss.csv` :**
     - Local database, version `02/2018`.
 - **`peitsch2vec/` :**
     - Generate data with the script [`src/embeddings/peitsch2vec.py`](src/embeddings/peitsch2vec.py). In `peitsch2vec/default_domain/`, data have been generated without the option `--segment`, while in `peitsch2vec/default_segments/`, data have been generated with the option `--segment`.
