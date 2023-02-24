@@ -77,6 +77,14 @@ def parsing():
         help="[[MANDATORY]]\n    ['.csv'] The HC database path."
     )
 
+    parser.add_argument(
+        "-s, --scope",
+        dest="scope",
+        required=True,
+        type=str,
+        help="[[MANDATORY]]\n    ['.txt'] A SCOPe classification file."
+    )
+
     # == OPTIONAL.
     parser.add_argument(
         "--epochs",
@@ -160,38 +168,48 @@ def parsing():
     # ===============================
     # Check the input file extension.
     if not argument["input"].endswith(".out"):
-        sysexit(f"\n[Err## 01] The input file '{argument['input']}' extension "
+        sysexit(f"\n[Err##] The input file '{argument['input']}' extension "
                 "is invalid. Please, give a '.out' file.")
 
     # Check if the input file exists.
     if not os.path.exists(argument["input"]):
-        sysexit(f"\n[Err## 02] The input file '{argument['input']}' does not "
+        sysexit(f"\n[Err##] The input file '{argument['input']}' does not "
                 "exist. Please check this given file.")
 
-    # Check the input file extension.
+    # Check the HCDB file extension.
     if not argument["hcdb"].endswith(".csv"):
-        sysexit(f"\n[Err## 03] The hcdb file '{argument['hcdb']}' extension "
+        sysexit(f"\n[Err##] The hcdb file '{argument['hcdb']}' extension "
                 "is invalid. Please, give a '.csv' file.")
 
-    # Check if the input file exists.
+    # Check if the HCDB file exists.
     if not os.path.exists(argument["hcdb"]):
-        sysexit(f"\n[Err## 04] The input file '{argument['hcdb']}' does not "
+        sysexit(f"\n[Err##] The input file '{argument['hcdb']}' does not "
+                "exist. Please check this given file.")
+
+    # Check the SCOPe classification file extension.
+    if not argument["scope"].endswith(".txt"):
+        sysexit(f"\n[Err##] The hcdb file '{argument['scope']}' extension "
+                "is invalid. Please, give a '.txt' file.")
+
+    # Check if the SCOPe classification file exists.
+    if not os.path.exists(argument["scope"]):
+        sysexit(f"\n[Err##] The input file '{argument['scope']}' does not "
                 "exist. Please check this given file.")
 
     # Check if the output directory exists.
     if not os.path.exists(argument["output"]):
-        sysexit(f"\n[Err## 05] The output directory '{argument['output']}' "
+        sysexit(f"\n[Err##] The output directory '{argument['output']}' "
                 "does not exist. Please check this given directory.")
 
     # Check if the input number of CPU is correct.
     if argument["cpu"] > nb_cpu:
-        sysexit(f"\n[Err## 06] Ask number of CPU, {argument['cpu']}, is "
+        sysexit(f"\n[Err##] Ask number of CPU, {argument['cpu']}, is "
                 "superior to the number of CPU of this computer, which "
                 f"is {nb_cpu}. Please change the input number.")
 
     # Check if the input number of CPU is correct.
     if argument["cpu"] <= 0:
-        sysexit(f"\n[Err## 07] Ask number of CPU, {argument['cpu']}, is "
+        sysexit(f"\n[Err##] Ask number of CPU, {argument['cpu']}, is "
                 "inferior or equal to 0. Please change the input number.")
 
     to_check: "list[str]" = ["epochs","minlen", "size", "window"]
@@ -204,12 +222,12 @@ def parsing():
     # Check that a bunch of values are > 0.
     for key in to_check:
         if argument[key] <= 0:
-            sysexit(f"\n[Err## 08] The given arguments '{key}' is incorrect. "
+            sysexit(f"\n[Err##] The given arguments '{key}' is incorrect. "
                     "You have to give an integer greater strictly than 0.")
 
     if argument["mintf"] is not None and argument["maxtf"] is not None:
         if argument["mintf"] >= argument["maxtf"]:
-            sysexit("\n[Err## 09] The given arguments for '--mintf' "
+            sysexit("\n[Err##] The given arguments for '--mintf' "
                     f"(= {argument['mintf']}) and for '--maxtf' (= "
                     f"{argument['maxtf']}) are incorrect. You have to give an "
                     "integer so the maximum is strictly greater than the "

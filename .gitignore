@@ -37,4 +37,4 @@ target/
 *.synctex.gz
 
 # Exception files
-!hca.out
+!data/*.out

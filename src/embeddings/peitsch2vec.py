@@ -39,8 +39,15 @@ from hca_reader import parse_hca_file
 # [P]
 from arg_parser import parsing
 from peitsch import Peitsch
+# [S]
+from sys import path
 # [T]
 from tqdm import tqdm
+
+# Checking parent directory.
+path.append("src/scope_tree/")
+
+from scope_tree import Scope
 
 
 def matrix_normed(matrix: object) -> object:
@@ -88,14 +95,27 @@ if __name__ == "__main__":
 
     # Get data.
     hca_out, domain_data = parse_hca_file(arg["input"], arg["segment"])
-    peitsch_manip: object = Peitsch(parse_hcdb("data/HCDB_summary.csv"))
+    peitsch_manip: object = Peitsch(parse_hcdb(arg["hcdb"]))
+    scope_manip: object = Scope(arg["scope"])
 
     # Getting all PEITSCH data.
-    for line in tqdm(hca_out, "  GETTING PEITSCH DATA"):
+    for i, line in enumerate(tqdm(hca_out, "  GETTING PEITSCH DATA")):
         peitsch_manip += line[2]
+
+        # Getting Peitsch code.
+        code: int = peitsch_manip.peitsch[i]
+        
+        # To read each line to get when we change of domain/segment.
+        if arg["segment"]:
+            read_domain: str = f"{line[0]}_{line[1]}"
+        else:
+            read_domain: str = line[0]
+
+        peitsch_manip.add_domain(domain_data[read_domain] + [line[0]], code)
 
     corpus: "list[list[str]]" = []
     sentence: "list[str]" = []
+    already_parse_code: "list[str]" = []
     shift: str = ""
 
     # =================
@@ -149,7 +169,9 @@ if __name__ == "__main__":
             else:
                 shift = line[0]
         
-        peitsch_manip.add_domain(domain_data[read_domain], code)
+        if code not in already_parse_code:
+            already_parse_code += [code]
+            peitsch_manip.add_global_score(code, scope_manip)
 
     # Final sentence addition.
     corpus += [sentence]
@@ -193,7 +215,7 @@ if __name__ == "__main__":
     # SAVE THE COMPUTE MODEL
     # ======================
     model_path: str = os.path.join(arg["output"], f"model_{date}.w2v")
-    peitsch2vec.save(model_path)
+    # peitsch2vec.save(model_path)
 
     # ===================
     # SAVE THE WORDS DATA
@@ -202,7 +224,7 @@ if __name__ == "__main__":
     # Convert the embeddings into float64.
     word_data: object = np.array(peitsch2vec.wv.vectors.astype("float64"),
                                  dtype="float64")
-    np.save(word_data_path, word_data, allow_pickle=True)
+    # np.save(word_data_path, word_data, allow_pickle=True)
 
     # ========================
     # SAVE THE CHARACTERISTICS
@@ -214,9 +236,10 @@ if __name__ == "__main__":
 
     charact_data_path: str = os.path.join(arg["output"],
                                           f"characteristics_{date}.npy")
+    
     # Creating the numpy arrays.
-    charact_data: object = np.array(charact_list)
-    np.save(charact_data_path, charact_data, allow_pickle=True)
+    charact_data: object = np.array(charact_list, dtype=object)
+    # np.save(charact_data_path, charact_data, allow_pickle=True)
 
     # ======================
     # SAVE THE COSINE MATRIX
@@ -229,4 +252,4 @@ if __name__ == "__main__":
     cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
     matrix_cosine: object = np.divide(matrix_embedding,
                                       matrix_normed(peitsch2vec.wv.vectors))
-    np.save(cosine_path, matrix_cosine, allow_pickle=True)
+    # np.save(cosine_path, matrix_cosine, allow_pickle=True)

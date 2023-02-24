@@ -115,7 +115,7 @@ class Peitsch:
                 ssr: str = "N"
 
             self.characteristic[peitsch] = [code, concentration, size, ssr, 1,
-                                            [], [], [], []]
+                                            [], [], [], [], []]
         else:
             # Number of Peitsch code found in a "corpus".
             self.characteristic[peitsch][4] += 1
@@ -174,8 +174,25 @@ class Peitsch:
 
         return np.sum(power)
 
-    def add_domain(self, characteristic, code):
-        self.characteristic[code][-4] += [characteristic[0]]
-        self.characteristic[code][-3] += [characteristic[1]]
-        self.characteristic[code][-2] += [characteristic[2]]
-        self.characteristic[code][-1] += [characteristic[3]]
+    def add_domain(self, characteristic: "list[str]", code: int):
+        """Adding domain data to code Peitsch characteristic.
+
+        Parameters
+        ----------
+        characteristic : list[str]
+            Domain data to add.
+        code : int
+            To which code Peitsch to add the given domain data.
+        """
+        self.characteristic[code][-5] += [characteristic[0]]
+        self.characteristic[code][-4] += [characteristic[1]]
+        self.characteristic[code][-3] += [characteristic[2]]
+        self.characteristic[code][-2] += [characteristic[3]]
+        self.characteristic[code][-1] += [characteristic[4]]
+
+    def add_global_score(self, code: int, scope_manip: object):
+        domain_list: "list[str]" = list(set(self.characteristic[code][-1]))
+        score: int = scope_manip.global_score(domain_list)
+        
+        self.characteristic[code] += [score]
+

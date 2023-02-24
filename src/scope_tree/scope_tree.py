@@ -1,4 +1,4 @@
-"""This module contains an object to create a SCOPe network graph.
+"""This module contains an object to manipulate SCOPe classification.
 """
 
 __authors__ = ["ROUAUD Lucas"]
@@ -13,7 +13,7 @@ from sys import exit as sysexit
 
 
 class Scope:
-    """An object to create a SCOPe network graph.
+    """An object to manipulate SCOPe classification.
     """
 
     def __init__(self, path: str) -> None:
@@ -28,7 +28,7 @@ class Scope:
 
         # Parse a given SCOPe classification data file.
         with open(path, "r", encoding="utf-8") as file:
-            for line in tqdm(list(file)):
+            for line in tqdm(list(file), "    PARSING SCOPe FILE"):
                 # Skip the comment lines.
                 if line[0] == "#":
                     continue
@@ -69,10 +69,10 @@ class Scope:
         """
         # Check if given domain are in the parse file.
         if left_domain not in self.classification:
-            sysexit(f"[Err## 10] Argument `left_domain` '{left_domain}' is not "
+            sysexit(f"[Err##] Argument `left_domain` '{left_domain}' is not "
                     "in the parse domain list. Please check what's been given.")
         elif right_domain not in self.classification:
-            sysexit(f"[Err## 11] Argument `right_domain` '{right_domain}' is "
+            sysexit(f"[Err##] Argument `right_domain` '{right_domain}' is "
                     "not in the parse domain list. Please check what's been "
                     "given.")
 
@@ -106,14 +106,20 @@ class Scope:
 
         # You should not have duplicate scores.
         if length != len(set(domain)):
-            sysexit(f"[Err## 12] There is/are {length - len(set(domain))} "
+            sysexit(f"[Err##] There is/are {length - len(set(domain))} "
                     "duplicates domains in the given list.")
 
         score_list: "list[int]" = 0
 
         # Compare all pairs of domains.
         for i, left_domain in enumerate(domain[:-1]):
+            if left_domain not in self.classification:
+                continue
+
             for right_domain in domain[i + 1:]:
+                if right_domain not in self.classification:
+                    continue
+
                 # Sum all local compute scores.
                 score_list += self.local_score(left_domain, right_domain)
 
