@@ -110,21 +110,25 @@ class Scope:
                     "duplicates domains in the given list.")
 
         score_list: "list[int]" = 0
+        count: int = 0
 
         # Compare all pairs of domains.
         for i, left_domain in enumerate(domain[:-1]):
             if left_domain not in self.classification:
+                length -= 1
                 continue
 
             for right_domain in domain[i + 1:]:
                 if right_domain not in self.classification:
+                    length -= 1
                     continue
 
                 # Sum all local compute scores.
                 score_list += self.local_score(left_domain, right_domain)
+                count += 1
 
         # Return the mean of local scores.
-        return score_list / length
+        return score_list / count
 
 
 if __name__ == "__main__":
@@ -134,4 +138,4 @@ if __name__ == "__main__":
     print(scope_manip)
     print(scope_manip.local_score("d3ordb_", "d3hx7r2"))
     print(scope_manip.local_score("d3ordb_", "d2gkna_"))
-    print(scope_manip.global_score(["d3ordb_", "d3hx7r2", "d2gkna_"]))
+    print(scope_manip.global_score(["d3ordb_", "d3hx7r2", "d2gkna_", "gg"]))

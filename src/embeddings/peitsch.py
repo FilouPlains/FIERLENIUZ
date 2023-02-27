@@ -193,6 +193,5 @@ class Peitsch:
     def add_global_score(self, code: int, scope_manip: object):
         domain_list: "list[str]" = list(set(self.characteristic[code][-1]))
         score: int = scope_manip.global_score(domain_list)
-        
-        self.characteristic[code] += [score]
 
+        self.characteristic[code] += [score]
