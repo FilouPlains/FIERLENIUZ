@@ -137,3 +137,7 @@ html, body.jp-Notebook {
 .jp-RenderedText[data-mime-type="application/vnd.jupyter.stderr"] {
     background-color: #3e0000;
 }
+
+div:not(.jp-MarkdownCell) div.jp-Cell-inputWrapper {
+    display: none;
+}
