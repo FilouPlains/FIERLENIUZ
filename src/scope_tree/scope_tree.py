@@ -52,8 +52,8 @@ class Scope:
         """
         return f"Scope object with {len(self.classification.keys())} items."
 
-    def local_score(self, left_domain: str, right_domain: str) -> int:
-        """Compute a score of distance between two SCOPe domains.
+    def local_distance(self, left_domain: str, right_domain: str) -> int:
+        """Compute a distance between two SCOPe domains.
 
         Parameters
         ----------
@@ -65,7 +65,7 @@ class Scope:
         Returns
         -------
         int
-            The compute local score.
+            The compute local distance.
         """
         # Check if given domain are in the parse file.
         if left_domain not in self.classification:
@@ -79,17 +79,17 @@ class Scope:
         left_class: "list[str]" = self.classification[left_domain].split(".")
         right_class: "list[str]" = self.classification[right_domain].split(".")
 
-        # Compute the score so the more we are close to the SCOPe classification
-        # tree root, the higher the score is.
+        # Compute the distance so the more we are close to the SCOPe
+        # classification tree root, the higher the distance is.
         for i, left in enumerate(left_class):
             if left != right_class[i]:
                 return 4 - i
 
         return 0
 
-    def global_score(self, domain: "list[str]") -> float:
-        """Compute a global score between multiple SCOPe domains. Actually, it
-        is the mean between of local score (see `local_score()`) of all pairs of
+    def global_distance(self, domain: "list[str]") -> float:
+        """Compute a global distance between multiple SCOPe domains. Actually, it
+        is the mean between of local distance (see `local_distance()`) of all pairs of
         domains.
 
         Parameters
@@ -100,35 +100,31 @@ class Scope:
         Returns
         -------
         float
-            The compute local score.
+            The compute local distance.
         """
         length: int = len(domain)
 
-        # You should not have duplicate scores.
+        # You should not have duplicate domains.
         if length != len(set(domain)):
             sysexit(f"[Err##] There is/are {length - len(set(domain))} "
                     "duplicates domains in the given list.")
 
-        score_list: "list[int]" = 0
-        count: int = 0
+        distance_list: "list[int]" = []
 
         # Compare all pairs of domains.
         for i, left_domain in enumerate(domain[:-1]):
             if left_domain not in self.classification:
-                length -= 1
                 continue
 
             for right_domain in domain[i + 1:]:
                 if right_domain not in self.classification:
-                    length -= 1
                     continue
 
-                # Sum all local compute scores.
-                score_list += self.local_score(left_domain, right_domain)
-                count += 1
+                # Sum all local compute distances.
+                distance_list += [self.local_distance(left_domain, right_domain)]
 
-        # Return the mean of local scores.
-        return score_list / count
+        # Return a list of local distances.
+        return distance_list
 
 
 if __name__ == "__main__":
@@ -136,6 +132,6 @@ if __name__ == "__main__":
 
     print(scope_manip.classification["d1dlwa_"])
     print(scope_manip)
-    print(scope_manip.local_score("d3ordb_", "d3hx7r2"))
-    print(scope_manip.local_score("d3ordb_", "d2gkna_"))
-    print(scope_manip.global_score(["d3ordb_", "d3hx7r2", "d2gkna_", "gg"]))
+    print(scope_manip.local_distance("d3ordb_", "d3hx7r2"))
+    print(scope_manip.local_distance("d3ordb_", "d2gkna_"))
+    print(scope_manip.global_distance(["d3ordb_", "d3hx7r2", "d2gkna_", "gg"]))

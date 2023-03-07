@@ -201,6 +201,6 @@ class Peitsch:
             A SCOPe manip object, already defined.
         """
         domain_list: "list[str]" = list(set(self.characteristic[code][-1]))
-        score: int = scope_manip.global_score(domain_list)
+        score: int = scope_manip.global_distance(domain_list)
 
         self.characteristic[code] += [score]
