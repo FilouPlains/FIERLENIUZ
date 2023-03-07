@@ -177,9 +177,7 @@ class ContextAnalyzer:
             seq_b: np.array = np.array(self.seq_b)
 
         # Compute the intersection.
-        intersection: int = np.sum(np.isin(seq_b, seq_a)) + \
-            np.sum(np.isin(seq_a, seq_b))
-
+        intersection: int = np.intersect1d(seq_b, seq_a).shape[0]
         # Compute the coefficient.
         coef: float = intersection / (seq_a.shape[0] + seq_b.shape[0])
 
