@@ -45,9 +45,6 @@ class ContextAnalyzer:
         self.seq_a: str = seq_a
         self.seq_b: str = seq_b
 
-        print(self.seq_a)
-        print(self.seq_b)
-
         # Create an array full of `-1`, of seq_a and seq_b length + 3.
         self.array: object = np.full((self.len_a + self.len_b + 3), -1)
         self.distance: "list[int]" = [None, None]
