@@ -39,11 +39,14 @@ class ContextAnalyzer:
         # Invert sequence-context and length so `seq_a` is always the longest
         # one.
         if self.len_b > self.len_a:
-            self.len_b, self.len_a = self.len_b, self.len_a
+            self.len_b, self.len_a = self.len_a, self.len_b
             seq_b, seq_a = seq_a, seq_b
 
         self.seq_a: str = seq_a
         self.seq_b: str = seq_b
+
+        print(self.seq_a)
+        print(self.seq_b)
 
         # Create an array full of `-1`, of seq_a and seq_b length + 3.
         self.array: object = np.full((self.len_a + self.len_b + 3), -1)
@@ -63,12 +66,12 @@ class ContextAnalyzer:
             implemented methods.
         """
         algo_name: "list[str]" = ["O(NP) sequence algorithm",
-                                  "Sørensen-Dice modified coefficient"]
+                                  "Bray-Curtis formula"]
         to_print: str = ""
 
         # To check if the distance is compute.
         for i, distance in enumerate(self.distance):
-            if distance:
+            if distance is not None:
                 to_print += (f"- Distance compute with {algo_name[i]} is equal "
                              f"to \"{distance:.1f}\".\n")
             else:
@@ -148,22 +151,18 @@ class ContextAnalyzer:
 
         return y
 
-    def sorensen_dice(self):
-        """Sørensen-Dice modified coefficient following the next formula:
+    def bray_curtis(self):
+        """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
+        following the next formula:
 
         ```
-                    2 × |A Δ B|
-        distance = —————————————
-                     |A| + |B|
+                        2 *|A ∩ B|
+        distance = 1 - ————————————
+                         |A| + |B|
         ```
 
         In other word, we compute the distance between to finished `np.array`.
-        For this, we compute the symmetric difference instead of the
-        intersection. Note that `|A|` signify the length of a given (computed)
-        set.
-
-        Original paper is here :
-        https://www.royalacademy.dk/Publications/High/295_S%C3%B8rensen,%20Thorvald.pdf
+        Note that `|A|` signify the length of a given (computed) set.
         """
         # To transform a string in a `np.array`.
         if isinstance(self.seq_a, str):
@@ -177,30 +176,35 @@ class ContextAnalyzer:
         else:
             seq_b: np.array = np.array(self.seq_b)
 
-        # This is the modified part of Sørensen-Dice coefficient. Here, we
-        # compute a symmetric difference, instead of a intersection. Like so, we
-        # have a distance between two sequence-context and not a similarity.
-        symmetric_diff: int = np.sum(np.isin(seq_b, seq_a, invert=True))
+        # Compute the intersection.
+        intersection: int = np.sum(np.isin(seq_b, seq_a)) + \
+            np.sum(np.isin(seq_a, seq_b))
+
         # Compute the coefficient.
-        coef: float = 2 * symmetric_diff / (seq_a.shape[0] + seq_b.shape[0])
+        coef: float = intersection / (seq_a.shape[0] + seq_b.shape[0])
 
         # Add the coefficient to the list.
-        self.distance[1] = coef
+        self.distance[1] = 1 - coef
 
 
 if __name__ == "__main__":
     Context: object = ContextAnalyzer("chienn", "niche")
     Context.onp_sequence_comparison()
-    Context.sorensen_dice()
+    Context.bray_curtis()
     print(Context)
 
     Context: object = ContextAnalyzer("abc", "abd")
     Context.onp_sequence_comparison()
-    Context.sorensen_dice()
+    Context.bray_curtis()
     print(Context)
 
     Context: object = ContextAnalyzer([201, 147, 21, 45, 307],
                                       [201, 147, 25, 49, 307])
     Context.onp_sequence_comparison()
-    Context.sorensen_dice()
+    Context.bray_curtis()
+    print(Context)
+
+    Context: object = ContextAnalyzer("abcdefg", "hijklmnop")
+    Context.onp_sequence_comparison()
+    Context.bray_curtis()
     print(Context)
