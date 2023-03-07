@@ -152,7 +152,7 @@ class ContextAnalyzer:
         """Sørensen-Dice modified coefficient following the next formula:
 
         ```
-                     2 × |A Δ B|
+                    2 × |A Δ B|
         distance = —————————————
                      |A| + |B|
         ```
