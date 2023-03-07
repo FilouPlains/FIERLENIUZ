@@ -179,14 +179,14 @@ class ContextAnalyzer:
         # Compute the intersection.
         intersection: int = np.intersect1d(seq_b, seq_a).shape[0]
         # Compute the coefficient.
-        coef: float = intersection / (seq_a.shape[0] + seq_b.shape[0])
-
+        coef: float = 2 * intersection / (seq_a.shape[0] + seq_b.shape[0])
+        
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
 
 
 if __name__ == "__main__":
-    Context: object = ContextAnalyzer("chienn", "niche")
+    Context: object = ContextAnalyzer("chien", "niche")
     Context.onp_sequence_comparison()
     Context.bray_curtis()
     print(Context)
