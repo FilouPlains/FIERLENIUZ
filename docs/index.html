@@ -21,6 +21,10 @@
         <a href="https://www.python.org/downloads/release/python-397/"><img src="https://img.shields.io/badge/python-%E2%89%A5_3.10.8-blue.svg" alt="Python 3.10.8"></a>
         <a href="https://docs.conda.io/en/latest/miniconda.html"><img src="https://img.shields.io/badge/miniconda-%E2%89%A5_22.11.1-green.svg" alt="Conda 22.11.1"></a>
         <a href="https://github.com/FilouPlains/FIERLENIUS"><img src="https://img.shields.io/github/last-commit/FilouPlains/FIERLENIUS.svg" alt="GitHub last commit"></a>
+
+        <p style="color: white;background-color:#600;padding:1em;margin:1cm 12cm;"><strong>
+            ⚠️ All header in white with black background are clickable.
+        </strong></p>
     </header>
 
     <main>
@@ -339,6 +343,79 @@ I can be analyzed any time!
 
         <section>
             <a href="embedding/data_meaning.html"><h1>Vector length checking</h1></a>
+
+            <div>
+                <h2>Length and entropy</h2>
+                <p>
+                    We can compute the vector length of each selected Peitsch 
+                    code, output by <strong>Word2Vec</strong>, by computing their 
+                    Euclidean norm:
+
+                    $$||\vec{A}||_2 = \sqrt{\displaystyle\sum_{i=0}^n x_i^2} = \sqrt{x_0^2 + \cdots + x_n^2}$$
+                </p>
+
+                <p>
+                    Then, on in other hand and based and the Peitsch code 
+                    frequency, we can compute three things:
+                    <ol>
+                        <li>
+                            The words’ frequency:
+
+                            $$f_{words~i} = \dfrac{n_{words~i}}{n_{total~words}}$$
+                        </li>
+                        <li>
+                            The words’ surprise:
+
+                            $$S_{words~i} = - \dfrac{ln(f_{words~i})}{ln(n_{total~words})}$$
+                        </li>
+                        <li>
+                            The context’s entropy:
+
+                            $$H(context) = - \displaystyle\sum_{i=0}^{n}\left[f_{words~i} \times S_{words~i}\right]$$
+                        </li>
+                    </ol>
+                </p>
+
+                <p>
+                    What is the signification of all those values? The words’ 
+                    frequency indicate us the frequency, the probability or the 
+                    chance of meeting a word in a given corpus. Or “how often do 
+                    I meet a certain words”. Note that, here, the words are Peitsch 
+                    code. The more there is a word, the more the frequency will 
+                    tends to 1. Inversely, it will tend to 0.
+                </p>
+                <p>
+                    Based on this, we can compute the surprise. The less a word 
+                    will appear in a corpus, the more we will be surprise if, by 
+                    choosing a random word, we choose it and vice versa. This value 
+                    quantify a word frequency, but in another and more complex way.
+                </p>
+                <p>
+                    To finish, we can compute a context’s entropy. To summarize 
+                    it, it’s in a way the mean of the surprise times their frequency. 
+                    It's a swing between how often we found a word and how surprise 
+                    we should be about it. The only thing is that is only 
+                    applicable on a context scale, and not to a word scale.
+                </p>
+
+                <h2>What is the meaning of the vector length?</h2>
+                <p>
+                    To check the vector length meaning, we can effectuate three 
+                    things:
+                    <ol>
+                        <li>Check the vector cosine distribution.</li>
+                        <li>Check the frequency versus the vector length.</li>
+                        <li>Check the surprise versus the vector length.</li>
+                    </ol>
+                </p>
+
+                <p>
+                    With this, we should see that a long vector is equivalent to a 
+                    very conserved context. We could also check if there is a link 
+                    with the affinity of the Peitsch code with regular secondary 
+                    structure or with the SCOPe classification.
+                </p>
+            </div>
         </section>
     </main>
 </body>
