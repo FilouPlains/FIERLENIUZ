@@ -38,9 +38,9 @@ class ContextAnalyzer:
 
         # Invert sequence-context and length so `seq_a` is always the longest
         # one.
-        if self.len_b > self.len_a:
-            self.len_b, self.len_a = self.len_a, self.len_b
-            seq_b, seq_a = seq_a, seq_b
+        if self.len_a > self.len_b:
+            self.len_a, self.len_b = self.len_b, self.len_a
+            seq_a, seq_b = seq_b, seq_a
 
         self.seq_a: str = seq_a
         self.seq_b: str = seq_b
@@ -95,7 +95,7 @@ class ContextAnalyzer:
         shift: int = self.len_a + 1
 
         # Check when all operation are done and correct.
-        while self.array[delta + shift] < self.len_b:
+        while True:
             p += 1
 
             for i in range(-p, delta, 1):
@@ -117,6 +117,9 @@ class ContextAnalyzer:
                 max(self.array[delta - 1 + shift] + 1,
                     self.array[delta + 1 + shift])
             )
+
+            if self.array[delta + shift] >= self.len_b:
+                break
 
         # Sequence difference and double of p.
         self.distance[0] = delta + 2 * p
@@ -148,7 +151,7 @@ class ContextAnalyzer:
 
         return y
 
-    def bray_curtis(self):
+    def bray_curtis(self) -> None:
         """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
         following the next formula:
 
@@ -177,29 +180,47 @@ class ContextAnalyzer:
         intersection: int = np.intersect1d(seq_b, seq_a).shape[0]
         # Compute the coefficient.
         coef: float = 2 * intersection / (seq_a.shape[0] + seq_b.shape[0])
-        
+
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
 
+    def compute_distance(self) -> None:
+        """An optimal way to compute the distance between two sequences. To do
+        so, we check that the two input sequences are 100 % equal. If so, both
+        distances are equal to `0.0`. Then we launch `self.bray_curtis`. If this
+        distance is equal to `1.0`, this mean that the input sequences are 100 %
+        different, and the distance link to `onp_sequence_comparison` is equal
+        to the sum of length of both sequences.
+        """
+        if self.seq_a == self.seq_b:
+            self.distance = [0.0, 0.0]
+            return None
+
+        self.bray_curtis()
+
+        if self.distance[1] == 1.0:
+            self.distance[0] = self.len_a + self.len_b
+        else:
+            self.onp_sequence_comparison()
+
 
 if __name__ == "__main__":
+    Context: object = ContextAnalyzer("chien", "chien")
+    Context.compute_distance()
+    print(Context)
+
     Context: object = ContextAnalyzer("chien", "niche")
-    Context.onp_sequence_comparison()
-    Context.bray_curtis()
+    Context.compute_distance()
     print(Context)
 
     Context: object = ContextAnalyzer("abc", "abd")
-    Context.onp_sequence_comparison()
-    Context.bray_curtis()
+    Context.compute_distance()
     print(Context)
 
-    Context: object = ContextAnalyzer([201, 147, 21, 45, 307],
-                                      [201, 147, 25, 49, 307])
-    Context.onp_sequence_comparison()
-    Context.bray_curtis()
+    Context: object = ContextAnalyzer([11, 39, 7, 73, 145, 73, 9, 5], [5])
+    Context.compute_distance()
     print(Context)
 
     Context: object = ContextAnalyzer("abcdefg", "hijklmnop")
-    Context.onp_sequence_comparison()
-    Context.bray_curtis()
+    Context.compute_distance()
     print(Context)
