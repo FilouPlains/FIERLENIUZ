@@ -69,7 +69,7 @@ def matrix_normed(matrix: object) -> object:
     # Repeat the vector to have a matrix.
     norm_matrix: object = np.array(list(norm_vect) * norm_vect.shape[0])
     norm_matrix = norm_matrix.reshape((matrix.shape[0], matrix.shape[0]))
-    
+
     # Create a product matrix (between normal and transpose one).
     return np.multiply(norm_matrix, np.rot90(norm_matrix, k=3))
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
         # Getting Peitsch code.
         code: int = peitsch_manip.peitsch[i]
-        
+
         # To read each line to get when we change of domain/segment.
         if arg["segment"]:
             read_domain: str = f"{line[0]}_{line[1]}"
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                 shift = f"{line[0]}_{line[1]}"
             else:
                 shift = line[0]
-        
+
         if code not in already_parse_code:
             already_parse_code += [code]
             peitsch_manip.add_global_score(code, scope_manip)
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
     charact_data_path: str = os.path.join(arg["output"],
                                           f"characteristics_{date}.npy")
-    
+
     # Creating the numpy arrays.
     charact_data: object = np.array(charact_list, dtype=object)
     np.save(charact_data_path, charact_data, allow_pickle=True)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     # Create a matrix with embedding only.
     matrix_embedding: object = np.dot(peitsch2vec.wv.vectors,
                                       peitsch2vec.wv.vectors.T)
-    
+
     # Create a matrix with cosine distance vectors and save it.
     cosine_path: str = os.path.join(arg["output"], f"matrix_cosine_{date}.npy")
     matrix_cosine: object = np.divide(matrix_embedding,
