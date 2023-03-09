@@ -33,6 +33,23 @@ def cluster_to_str(cluster_line: np.array) -> str:
     return "".join(cluster_line.astype(int).astype(str))
 
 
+def number_hydrophobic(cluster_line: np.array) -> str:
+    """Transforms a numpy boolean array to a string.
+
+    Parameters
+    ----------
+    cluster_line : np.array
+        The numpy array to be transformed.
+
+    Returns
+    -------
+    str
+        The hydrophobic cluster in string format.
+    """
+    # Convert the numpy to int then to string so join can work properly.
+    return np.sum(cluster_line)
+
+
 def extract_array(path: str) -> np.array:
     """Manipulation to gets a numpy array from a file containing a `*`.
 
@@ -68,6 +85,8 @@ if __name__ == "__main__":
     code_peitsch: np.array = characteristic[0]
     # Convert all np.array of bool to str hydrophobic clusters.
     cluster: np.array = np.array(list(map(cluster_to_str, characteristic[1])))
+    hydrophobic: np.array = np.array(list(map(number_hydrophobic,
+                                              characteristic[1])))
     concentration: np.array = characteristic[2]
     size: np.array = characteristic[3]
     ssr: np.array = characteristic[4]
@@ -75,11 +94,12 @@ if __name__ == "__main__":
     # Extract the vectors' norm.
     norm_domain: np.array = np.linalg.norm(embedding_domain, axis=0)
     norm_segment: np.array = np.linalg.norm(embedding_segment, axis=0)
-
+    
     # Concatenante all data in a matrix and transpose it.
     data_matrix: np.array = np.transpose(np.array([
         code_peitsch,
         cluster,
+        hydrophobic,
         concentration,
         size,
         ssr,
@@ -94,7 +114,7 @@ if __name__ == "__main__":
         data_matrix,
         fmt="%s",
         delimiter=",",
-        header=("CODE_PEITSCH,CLUSTER,HYDROPHOBIC_SCORE,SIZE,SSR,COUNT,"
-                "NORM_DOMAIN,NORM_SEGMENT"),
+        header=("CODE_PEITSCH,CLUSTER,NUMBER_OF_HYDROPHOBIC,HYDROPHOBIC_SCORE,"
+                "SIZE,SSR,COUNT,NORM_DOMAIN,NORM_SEGMENT"),
         comments=""
     )
