@@ -13,9 +13,14 @@ __copyright__ = "CC BY-SA"
 # [N]
 import numpy as np
 
+# [F]
+from functools import reduce
+# [S]
+from sys import exit as sysexit
 
-class ContextAnalyzer:
-    """To create an object to align to set of objects. 
+
+class PairewiseContextAnalyzer:
+    """To create an object to align two set of objects. 
     """
 
     def __init__(
@@ -23,7 +28,7 @@ class ContextAnalyzer:
         seq_a: "list | str | np.array",
         seq_b: "list | str | np.array"
     ) -> None:
-        """Instantiate an `ContextAnalyzer` object.
+        """Instantiate an `PairewiseContextAnalyzer` object.
 
         Parameters
         ----------
@@ -161,7 +166,7 @@ class ContextAnalyzer:
                          |A| + |B|
         ```
 
-        In other word, we compute the distance between to finished `np.array`.
+        In other word, we compute the distance between two finished `np.array`.
         Note that `|A|` signify the length of a given (computed) set.
         """
         # To transform a string in a `np.array`.
@@ -204,23 +209,183 @@ class ContextAnalyzer:
             self.onp_sequence_comparison()
 
 
+class MultipleContextAnalyzer:
+    def __init__(
+        self,
+        *seq: "list | str | np.array",
+        disable_checking: bool = False
+    ) -> None:
+        """Instantiate an `MultipleContextAnalyzer` object.
+
+        Parameters
+        ----------
+        *seq : list | np.array
+            All sequence-context to compare. Not DIRECTLY a list, but much
+            something like:
+
+        ```
+        >>> MultipleContextAnalyzer(*[["a", "b"], ["c", "d"]])
+        ```
+
+            Which going to return something like:
+
+        ```
+        ["a", "b"] ["c", "d"]
+        ```
+
+            And not:
+
+        ```
+        [["a", "b"], ["c", "d"]]
+        ```
+
+            SO BEWARE!!!
+        disable_checking : bool
+            Only put `True` when you know and 100 % sure of what you are doing
+            and give to this function. Disable the checking of this is list or
+            np.array of something that are given, and not something else like a
+            string.
+
+            So:
+
+                `True`: no checking, WARNING!
+
+                `False`: checking enable.
+
+            By default, set to `False`.
+        """
+        self.seq = seq
+
+        if not disable_checking:
+            check_str: "list[int]" = list(map(
+                lambda item:
+                    0 if isinstance(item, list) | isinstance(item, np.ndarray)
+                    else 1,
+                self.seq
+            ))
+
+            if 1 in check_str:
+                sysexit("[Err##] Only 'list' or 'np.array' are accepted. "
+                        "Please convert the input data.")
+
+        self.distance: "list[int]" = [None, None]
+
+    def __str__(self) -> str:
+        """Change the `print()` function message.
+
+        PRIVATE
+        -------
+
+        Returns
+        -------
+        str
+            `print()` the distance if it is already compute. Else, `print()` a
+            message to say that the distance is not computed. Do it for all
+            implemented methods.
+        """
+        algo_name: "list[str]" = ["dissimilarity percentage unaligned",
+                                  "Bray-Curtis formula"]
+        to_print: str = ""
+
+        # To check if the distance is compute.
+        for i, distance in enumerate(self.distance):
+            if distance is not None:
+                to_print += (f"- Distance compute with {algo_name[i]} is equal "
+                             f"to \"{distance:.1f}\".\n")
+            else:
+                to_print += (f"- Distance compute with {algo_name[i]} was not "
+                             "compute.\n")
+
+        return to_print
+
+    def bray_curtis(self) -> None:
+        """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
+        following the next formula:
+
+        ```
+                         n *|A ∩ B ∩ ... ∩ N|
+        distance = 1 - ———————————————————————
+                        |A| + |B| + ... + |N|
+        ```
+
+        In other word, we compute the distance between `n` finished `np.array`.
+        Note that `|A|` signify the length of a given (computed) set.
+        """
+        # Compute the intersection.
+        intersection: int = reduce(np.intersect1d, self.seq).shape[0]
+        # Compute the sum of number of items.
+        item_sum: int = np.sum(list(map(lambda item: np.array(item).shape[0],
+                                        self.seq)))
+        # Compute the coefficient.
+        coef: float = len(self.seq) * intersection / item_sum
+
+        # Add the coefficient to the list.
+        self.distance[1] = 1 - coef
+
+    def dissimilarity(self):
+        """Compute the dissimilarity by doing `100 - identity_percentage`.
+        """
+        # Transform all sequences into a np.array.
+        seq: np.array = np.array(self.seq)
+
+        # If all residue of a sequence are identical, the given row will
+        # output 0.
+        ident: np.array = np.sum(np.absolute(seq[0] - seq[1:]), axis=0)
+        # Count the number of 0 (identity percentage) and substract 100.
+        dissim: float = 100 - np.sum(ident == 0) / seq.shape[1] * 100
+
+        self.distance[0] = dissim
+
+
 if __name__ == "__main__":
-    Context: object = ContextAnalyzer("chien", "chien")
+    print("┏━━━━━━━━━━━━━━━━━━┓")
+    print("┃     PAIRWISE     ┃")
+    print("┗━━━━━━━━━━━━━━━━━━┛\n")
+
+    Context: object = PairewiseContextAnalyzer("chien", "chien")
     Context.compute_distance()
     print(Context)
 
-    Context: object = ContextAnalyzer("chien", "niche")
+    Context: object = PairewiseContextAnalyzer("chien", "niche")
     Context.compute_distance()
     print(Context)
 
-    Context: object = ContextAnalyzer("abc", "abd")
+    Context: object = PairewiseContextAnalyzer("abc", "abd")
     Context.compute_distance()
     print(Context)
 
-    Context: object = ContextAnalyzer([11, 39, 7, 73, 145, 73, 9, 5], [5])
+    Context: object = PairewiseContextAnalyzer(
+        [11, 39, 7, 73, 145, 73, 5], [5])
     Context.compute_distance()
     print(Context)
 
-    Context: object = ContextAnalyzer("abcdefg", "hijklmnop")
+    Context: object = PairewiseContextAnalyzer("abcdefg", "hijklmnop")
     Context.compute_distance()
+    print(Context)
+
+    print("┏━━━━━━━━━━━━━━━━━━┓")
+    print("┃     MULTIPLE     ┃")
+    print("┗━━━━━━━━━━━━━━━━━━┛\n")
+    Context: object = MultipleContextAnalyzer([5, 39, 7, 73], [145, 73, 5],
+                                              [5])
+    Context.bray_curtis()
+    print(Context)
+    Context: object = MultipleContextAnalyzer([39, 7, 73], [145, 75],
+                                              [5])
+    Context.bray_curtis()
+    print(Context)
+
+    Context: object = MultipleContextAnalyzer([39, 7, 73], [39, 19, 21],
+                                              [39, 79, 97], [39, 79, 97])
+    Context.bray_curtis()
+    Context.dissimilarity()
+    print(Context)
+
+    Context: object = MultipleContextAnalyzer([5, 39], [145, 73, 5],
+                                              [5])
+    Context.bray_curtis()
+    print(Context)
+
+    Context: object = MultipleContextAnalyzer(*[[5]] * 100)
+    Context.bray_curtis()
     print(Context)
