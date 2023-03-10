@@ -17,6 +17,8 @@ import numpy as np
 from functools import reduce
 # [S]
 from sys import exit as sysexit
+# [T]
+from typing import Type
 
 
 class PairewiseContextAnalyzer:
@@ -25,16 +27,16 @@ class PairewiseContextAnalyzer:
 
     def __init__(
         self,
-        seq_a: "list | str | np.array",
-        seq_b: "list | str | np.array"
+        seq_a: "list | str | np.ndarray",
+        seq_b: "list | str | np.ndarray"
     ) -> None:
         """Instantiate an `PairewiseContextAnalyzer` object.
 
         Parameters
         ----------
-        seq_a : list | str | np.array
+        seq_a : `list | str | np.ndarray`
             The first sequence-context to compare.
-        seq_b : list | str | np.array
+        seq_b : `list | str | np.ndarray`
             The second sequence-context to compare.
         """
         # Gets sequence-context length.
@@ -62,7 +64,7 @@ class PairewiseContextAnalyzer:
 
         Returns
         -------
-        str
+        `str`
             `print()` the distance if it is already compute. Else, `print()` a
             message to say that the distance is not computed. Do it for all
             implemented methods.
@@ -137,14 +139,14 @@ class PairewiseContextAnalyzer:
 
         Parameters
         ----------
-        i : int
+        i : `int`
             Array position.
-        y : int
+        y : `int`
             `seq_b` position.
 
         Returns
         -------
-        int
+        `int`
             The furthest distance between to sequence-context.
         """
         x: int = y - i
@@ -212,14 +214,14 @@ class PairewiseContextAnalyzer:
 class MultipleContextAnalyzer:
     def __init__(
         self,
-        *seq: "list | str | np.array",
+        *seq: "list | str | np.ndarray",
         disable_checking: bool = False
     ) -> None:
         """Instantiate an `MultipleContextAnalyzer` object.
 
         Parameters
         ----------
-        *seq : list | np.array
+        *seq : `list | np.ndarray`
             All sequence-context to compare. Not DIRECTLY a list, but much
             something like:
 
@@ -240,7 +242,8 @@ class MultipleContextAnalyzer:
         ```
 
             SO BEWARE!!!
-        disable_checking : bool
+
+        disable_checking : `bool`
             Only put `True` when you know and 100 % sure of what you are doing
             and give to this function. Disable the checking of this is list or
             np.array of something that are given, and not something else like a
@@ -278,7 +281,7 @@ class MultipleContextAnalyzer:
 
         Returns
         -------
-        str
+        `str`
             `print()` the distance if it is already compute. Else, `print()` a
             message to say that the distance is not computed. Do it for all
             implemented methods.
@@ -337,6 +340,100 @@ class MultipleContextAnalyzer:
         self.distance[0] = dissim
 
 
+def center_context(
+    context: "np.ndarray",
+    window: int,
+    center: "str | int | float",
+    gap_symbol: "str | int | float" = "-"
+) -> np.ndarray:
+    """Center a set of context. The context have to be in a format like:
+
+    ```
+    np.array([[0, 1, 2, 3], [1, 2, 3], [7, 8, 9, 0, 1, 2, 3]])
+    ```
+
+    Where the whole `np.array()` is the context, `np.array()[n]` (like
+    `[1, 2, 3]`) is a sentence, and `np.array()[n][m]` is a item (like `1`).
+    Then, the function return an array centered around `center` for a given
+    `window`, like:
+
+    ```
+    >>> center_context(
+    >>>     context=np.array([[2],[0, 2, 1], [0, 1, 2, 3, 4]]),
+    >>>     window=4,
+    >>>     center=2
+    >>>     gap_symbol="-"
+    >>> )
+
+    [["-", 2, "-"], [0, 2, 1], [1, 2, 3]]
+    ```
+
+    Parameters
+    ----------
+    context : `np.ndarray`
+        A `np.array` containing a context to center around `center`.
+
+    window : `int`
+        How many items to keep around a `center` object. The value indicates
+        items from left and right. In other words, if `window=1`, we keep 1 item
+        to the left of `center` and 1 item to the right of `center`. If there is
+        no item to keep, insert a `gap_symbol`.
+
+    center : `str | int | float`
+        The word to center around the context. The words **have to be** in each
+        "sentence" of a context.
+
+    gap_symbol : `str | int | float`
+        A gap symbol to insert when no item can be kept around `center` for a
+        given `window`. By default, "-" is the symbol.
+
+    Returns
+    -------
+    `np.ndarray`
+        A context centered around a `center` object.
+    """
+    # To stock the new formatted context.
+    formatted_context: np.ndarray = []
+
+    # Parse all available context and center them.
+    for sentence in context:
+        # A `center` object have to be in a `sentence`.
+        if center not in sentence:
+            sysexit(f"[Err#] The object `center` {center} is not present in "
+                    f"the `sentence` {sentence}. Please check the input data, "
+                    "as `center` has to be in `sentence`.")
+
+        # Convert to a np.array
+        sentence: np.ndarray = np.array(sentence)
+
+        # Parse all position where we possibly have a `center` object.
+        for i in np.where(sentence == center)[0]:
+            # To check to the left that we are not "out of bound". If so, we
+            # have to insert gap.
+            if i - window < 0:
+                left_gap: int = -(i - window)
+                left_sentence: list = list(sentence[:i])
+            else:
+                left_gap: int = 0
+                left_sentence: list = list(sentence[i - window:i])
+
+            # To check to the right that we are not "out of bound". If so, we
+            # have to insert gap.
+            if sentence.shape[0] <= i + window + 1:
+                right_gap: int = i + window - sentence.shape[0] + 1
+                right_sentence: list = list(sentence[i + 1:])
+            else:
+                right_gap: 0
+                right_sentence: list = list(sentence[i + 1:i + window + 1])
+
+            # The new centered and formatted context.
+            formatted_context += [left_gap * [gap_symbol] + left_sentence +
+                                  [sentence[i]] + right_sentence
+                                  + right_gap * [gap_symbol]]
+
+    return np.array(formatted_context)
+
+
 if __name__ == "__main__":
     print("┏━━━━━━━━━━━━━━━━━━┓")
     print("┃     PAIRWISE     ┃")
@@ -388,4 +485,32 @@ if __name__ == "__main__":
 
     Context: object = MultipleContextAnalyzer(*[[5]] * 100)
     Context.bray_curtis()
+    print(Context)
+
+    print("┏━━━━━━━━━━━━━━━━━━━━━━━━┓")
+    print("┃     CENTER CONTEXT     ┃")
+    print("┗━━━━━━━━━━━━━━━━━━━━━━━━┛\n")
+
+    f_context: np.ndarray = center_context(
+        context=np.array([[2], [0, 2, 1], [1, 2, 3, 4], [2, 1, 2, 3, 4]],
+                         dtype=object),
+        window=2,
+        center=2
+    )
+
+    print("f_context= \n", f_context, "\n")
+
+    f_context: np.ndarray = center_context(
+        context=np.array([[2, 1], [0, 2, 1], [1, 2, 1, 4], [2, 1, 1, 4]],
+                         dtype=object),
+        window=2,
+        center=2,
+        gap_symbol=-1
+    )
+
+    print("f_context= \n", f_context, "\n")
+
+    Context: object = MultipleContextAnalyzer(*f_context)
+    Context.bray_curtis()
+    Context.dissimilarity()
     print(Context)
