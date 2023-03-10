@@ -1,13 +1,31 @@
-"""Compute the divergence between to list, based on `An O(NP) Sequence
-Comparison Algorithm` by Sun WU, Udi MANBER, and Gene MYERS in Information
-Processing Letters, or in the next link:
-https://publications.mpi-cbg.de/Wu_1990_6334.pdf
+"""This module contains 3 things:
+
+1) An object `PairewiseContextAnalyzer` to compare pairwise sequences-contexts
+using :
+
+    - The divergence between to list, based on `An O(NP) Sequence
+      Comparison Algorithm` by Sun WU, Udi MANBER, and Gene MYERS in Information
+      Processing Letters, or in the next link:
+      https://publications.mpi-cbg.de/Wu_1990_6334.pdf
+
+    - Bray-Curtis distance.
+
+2) An object `MultipleContextAnalyzer` to compare multiple sequences-contexts
+using :
+
+    - The dissimilarity percentage.
+
+    - Bray-Curtis distance.
+
+3) A function `center_context` to center `sentences` in `context` around a
+`center` object with a distance of `window`. Have to be done to use the
+dissimilarity percentage method in `MultipleContextAnalyzer`.
 """
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "07/03/2023"
-__version__ = "1.1.0"
+__date__ = "10/03/2023"
+__version__ = "1.3.0"
 __copyright__ = "CC BY-SA"
 
 # [N]
