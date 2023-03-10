@@ -346,13 +346,41 @@ class MultipleContextAnalyzer:
         In other word, we compute the distance between `n` finished `np.array`.
         Note that `|A|` signify the length of a given (computed) set.
         """
+        def __intersect1d(ar1: np.ndarray, ar2: np.ndarray) -> np.ndarray:
+            """So we can apply the `reduce()` function of `functools` with
+            using the `np.intersect1d()` function with:
+
+            ```
+            np.intersect1d(
+                ar1=...,
+                ar2=...,
+                assume_unique=True
+            )
+            ```
+
+            Parameters
+            ----------
+            ar1 : `np.ndarray`
+                Input arrays. Will be flattened if not already 1D.
+            ar2 : `np.ndarray`
+                Input arrays. Will be flattened if not already 1D.
+
+            Returns
+            -------
+            np.ndarray
+                Sorted 1D array of common and **non-unique** elements.
+            """
+            return np.intersect1d(ar1, ar2, assume_unique=True)
+
         # Compute the intersection.
-        intersection: int = reduce(np.intersect1d, self.seq).shape[0]
+        intersection: int = reduce(__intersect1d, self.seq).shape[0]
+
         # Compute the sum of number of items.
         item_sum: int = np.sum(list(map(lambda item: np.array(item).shape[0],
                                         self.seq)))
+
         # Compute the coefficient.
-        coef: float = len(self.seq) * intersection / item_sum
+        coef: float = intersection / item_sum
 
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
