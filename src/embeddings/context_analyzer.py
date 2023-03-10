@@ -319,6 +319,20 @@ class MultipleContextAnalyzer:
 
         return to_print
 
+    def dissimilarity(self):
+        """Compute the dissimilarity by doing `100 - identity_percentage`.
+        """
+        # Transform all sequences into a np.array.
+        seq: np.array = np.array(self.seq)
+
+        # If all residue of a sequence are identical, the given row will
+        # output 0.
+        ident: np.array = np.sum(np.absolute(seq[0] - seq[1:]), axis=0)
+        # Count the number of 0 (identity percentage) and substract 100.
+        dissim: float = 100 - np.sum(ident == 0) / seq.shape[1] * 100
+
+        self.distance[0] = dissim
+
     def bray_curtis(self) -> None:
         """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
         following the next formula:
@@ -342,20 +356,6 @@ class MultipleContextAnalyzer:
 
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
-
-    def dissimilarity(self):
-        """Compute the dissimilarity by doing `100 - identity_percentage`.
-        """
-        # Transform all sequences into a np.array.
-        seq: np.array = np.array(self.seq)
-
-        # If all residue of a sequence are identical, the given row will
-        # output 0.
-        ident: np.array = np.sum(np.absolute(seq[0] - seq[1:]), axis=0)
-        # Count the number of 0 (identity percentage) and substract 100.
-        dissim: float = 100 - np.sum(ident == 0) / seq.shape[1] * 100
-
-        self.distance[0] = dissim
 
 
 def center_context(
@@ -441,7 +441,7 @@ def center_context(
                 right_gap: int = i + window - sentence.shape[0] + 1
                 right_sentence: list = list(sentence[i + 1:])
             else:
-                right_gap: 0
+                right_gap: int = 0
                 right_sentence: list = list(sentence[i + 1:i + window + 1])
 
             # The new centered and formatted context.
