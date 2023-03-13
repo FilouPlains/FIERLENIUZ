@@ -31,12 +31,12 @@ __copyright__ = "CC BY-SA"
 # [N]
 import numpy as np
 
+# [C]
+from collections import Counter
 # [F]
 from functools import reduce
 # [S]
 from sys import exit as sysexit
-# [T]
-from typing import Type
 
 
 class PairewiseContextAnalyzer:
@@ -176,7 +176,11 @@ class PairewiseContextAnalyzer:
 
         return y
 
-    def bray_curtis(self) -> None:
+    def bray_curtis(
+        self,
+        skip_element: "str | int | float" = None,
+        do_skip: bool = False
+    ) -> None:
         """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
         following the next formula:
 
@@ -188,6 +192,20 @@ class PairewiseContextAnalyzer:
 
         In other word, we compute the distance between two finished `np.array`.
         Note that `|A|` signify the length of a given (computed) set.
+
+        Parameters
+        ----------
+        skip_element : `str | int | float`
+            If this value is set, do not take in consideration this object into
+            the intersection. For instance, if we set `skip="-"` and we have an
+            intersection equal to `["-", "-", 1]`, we have in result `[1]`. By
+            default set to `None`, so we take in consideration all intersection
+            objects.
+
+        do_skip : `bool`
+            If set to `True`, substrat `1` to the intersection. We do like so
+            for the project purpose, as far as we always have one common
+            element.
         """
         # To transform a string in a `np.array`.
         if isinstance(self.seq_a, str):
@@ -202,9 +220,11 @@ class PairewiseContextAnalyzer:
             seq_b: np.array = np.array(self.seq_b)
 
         # Compute the intersection.
-        intersection: int = np.intersect1d(seq_b, seq_a).shape[0]
+        intersect: int = np.sum(intersection(self.seq_a, self.seq_b)
+                                != skip_element)
         # Compute the coefficient.
-        coef: float = 2 * intersection / (seq_a.shape[0] + seq_b.shape[0])
+        coef: float = 2 * (intersect - do_skip) / (seq_a.shape[0] +
+                                                   seq_b.shape[0])
 
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
@@ -342,14 +362,14 @@ class MultipleContextAnalyzer:
         following the next formula:
 
         ```
-                         n *|A ∩ B ∩ ... ∩ N|
-        distance = 1 - ———————————————————————
-                        |A| + |B| + ... + |N|
+                         n * |A ∩ B ∩ ... ∩ N|
+        distance = 1 - ————————————————————————
+                         |A| + |B| + ... + |N|
         ```
 
         In other word, we compute the distance between `n` finished `np.array`.
         Note that `|A|` signify the length of a given (computed) set.
-        
+
         Parameters
         ----------
         skip_element : `str | int | float`
@@ -364,34 +384,8 @@ class MultipleContextAnalyzer:
             for the project purpose, as far as we always have one common
             element.
         """
-        def __intersect1d(ar1: np.ndarray, ar2: np.ndarray) -> np.ndarray:
-            """So we can apply the `reduce()` function of `functools` with
-            using the `np.intersect1d()` function with:
-
-            ```
-            np.intersect1d(
-                ar1=...,
-                ar2=...,
-                assume_unique=True
-            )
-            ```
-
-            Parameters
-            ----------
-            ar1 : `np.ndarray`
-                Input arrays. Will be flattened if not already 1D.
-            ar2 : `np.ndarray`
-                Input arrays. Will be flattened if not already 1D.
-
-            Returns
-            -------
-            np.ndarray
-                Sorted 1D array of common and **non-unique** elements.
-            """
-            return np.intersect1d(ar1, ar2, assume_unique=True)
-        
         # Compute the intersection.
-        intersec: int = np.sum(reduce(__intersect1d, self.seq) != skip_element)
+        intersec: int = np.sum(reduce(intersection, self.seq) != skip_element)
 
         # Compute the sum of number of items.
         item_sum: int = np.sum(list(map(lambda item: np.array(item).shape[0],
@@ -498,6 +492,39 @@ def center_context(
     return np.array(formatted_context)
 
 
+def intersection(
+    ar1: "np.ndarray | list",
+    ar2: "np.ndarray | list"
+) -> np.ndarray:
+    """So we can apply the `reduce()` function of `functools` with
+    using the `np.intersect1d()` function with:
+
+    ```
+    np.intersect1d(
+        ar1=...,
+        ar2=...,
+        assume_unique=True
+    )
+    ```
+
+    PRIVATE
+    -------
+
+    Parameters
+    ----------
+    ar1 : `np.ndarray | list`
+        Input arrays. Will be flattened if not already 1D.
+    ar2 : `np.ndarray | list`
+        Input arrays. Will be flattened if not already 1D.
+
+    Returns
+    -------
+    np.ndarray
+        1D array of common and **non-unique** elements.
+    """
+    return np.array(list((Counter(ar1) & Counter(ar2)).elements()))
+
+
 if __name__ == "__main__":
     print("┏━━━━━━━━━━━━━━━━━━┓")
     print("┃     PAIRWISE     ┃")
@@ -531,8 +558,8 @@ if __name__ == "__main__":
                                               [5])
     Context.bray_curtis()
     print(Context)
-    Context: object = MultipleContextAnalyzer([39, 7, 73], [145, 75],
-                                              [5])
+    Context: object = MultipleContextAnalyzer([39, 7, 73] * 10, [145, 75] * 10,
+                                              [5] * 10)
     Context.bray_curtis()
     print(Context)
 
