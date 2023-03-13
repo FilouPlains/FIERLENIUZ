@@ -320,7 +320,7 @@ class MultipleContextAnalyzer:
         return to_print
 
     def dissimilarity(self):
-        """Compute the dissimilarity by doing `100 - identity_percentage`.
+        """Compute the dissimilarity by doing `1 - identity`.
         """
         # Transform all sequences into a np.array.
         seq: np.array = np.array(self.seq)
@@ -328,12 +328,16 @@ class MultipleContextAnalyzer:
         # If all residue of a sequence are identical, the given row will
         # output 0.
         ident: np.array = np.sum(np.absolute(seq[0] - seq[1:]), axis=0)
-        # Count the number of 0 (identity percentage) and substract 100.
-        dissim: float = 100 - np.sum(ident == 0) / seq.shape[1] * 100
+        # Count the number of 0 (identity) and substract 1.
+        dissimilarity: float = 1 - np.sum(ident == 0) / seq.shape[1]
 
-        self.distance[0] = dissim
+        self.distance[0] = dissimilarity
 
-    def bray_curtis(self) -> None:
+    def bray_curtis(
+        self,
+        skip_element: "str | int | float" = None,
+        do_skip: bool = False
+    ) -> None:
         """Bray-Curtis distance, which is 1 - Sørensen-Dice coefficient,
         following the next formula:
 
@@ -345,6 +349,20 @@ class MultipleContextAnalyzer:
 
         In other word, we compute the distance between `n` finished `np.array`.
         Note that `|A|` signify the length of a given (computed) set.
+        
+        Parameters
+        ----------
+        skip_element : `str | int | float`
+            If this value is set, do not take in consideration this object into
+            the intersection. For instance, if we set `skip="-"` and we have an
+            intersection equal to `["-", "-", 1]`, we have in result `[1]`. By
+            default set to `None`, so we take in consideration all intersection
+            objects.
+
+        do_skip : `bool`
+            If set to `True`, substrat `1` to the intersection. We do like so
+            for the project purpose, as far as we always have one common
+            element.
         """
         def __intersect1d(ar1: np.ndarray, ar2: np.ndarray) -> np.ndarray:
             """So we can apply the `reduce()` function of `functools` with
@@ -371,16 +389,16 @@ class MultipleContextAnalyzer:
                 Sorted 1D array of common and **non-unique** elements.
             """
             return np.intersect1d(ar1, ar2, assume_unique=True)
-
+        
         # Compute the intersection.
-        intersection: int = reduce(__intersect1d, self.seq).shape[0]
+        intersec: int = np.sum(reduce(__intersect1d, self.seq) != skip_element)
 
         # Compute the sum of number of items.
         item_sum: int = np.sum(list(map(lambda item: np.array(item).shape[0],
                                         self.seq)))
 
         # Compute the coefficient.
-        coef: float = intersection / item_sum
+        coef: float = len(self.seq) * (intersec - do_skip) / item_sum
 
         # Add the coefficient to the list.
         self.distance[1] = 1 - coef
@@ -557,6 +575,6 @@ if __name__ == "__main__":
     print("f_context= \n", f_context, "\n")
 
     Context: object = MultipleContextAnalyzer(*f_context)
-    Context.bray_curtis()
+    Context.bray_curtis(skip_element=-1, do_skip=True)
     Context.dissimilarity()
     print(Context)
