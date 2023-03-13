@@ -47,7 +47,7 @@ from tqdm import tqdm
 # Checking parent directory.
 path.append("src/scope_tree/")
 
-from scope_tree import Scope
+from scope_score import Scope
 
 
 def matrix_normed(matrix: object) -> object:
