@@ -13,15 +13,11 @@ import igviz
 # [N]
 import networkx as net
 import numpy as np
-# [T]
-import matplotlib.pyplot as plt
 
 # [M]
 from matplotlib import colormaps
 # [T]
 from tqdm import tqdm
-# [S]
-from sys import exit as sysexit
 
 
 class Scope:
@@ -90,60 +86,109 @@ class Scope:
 
             last = node
 
+    def plot_network(self, peitsch_code, min_size=10, max_size=50):
+        max_size -= min_size
+
+        log_size: np.ndarray = np.log(np.array(scope_tree.size) + 1)
+        size: "list[float]" = list(np.array(log_size) / max(log_size)
+                                   * max_size + min_size)
+
+        net_plot: object = igviz.plot(
+            G=scope_tree.tree,
+            title="",
+            color_method=scope_tree.color,
+            size_method=size,
+            layout="kamada",
+            colorscale=None,
+            node_opacity=1,
+            highlight_neighbours_on_hover=True,
+            transparent_background=False,
+            showlegend=True
+        )
+
+        net_plot.update_traces(
+            marker_showscale=False,
+            line_color="white",
+            line_width=1
+        )
+
+        net_plot.update_layout(
+            template="plotly_dark",
+            legend_title=("<b>Network of SCOPe tree<br />classification for the"
+                          f"<br />Peitsch code {peitsch_code}</b>"),
+            font=dict(size=14),
+            margin=dict(l=30, r=30, t=30, b=30)
+        )
+
+        net_plot["data"][0]["name"] = "Edges"
+        net_plot["data"][1]["name"] = "Nodes"
+
+        shift_size: np.ndarray = (np.array(scope_tree.size) + 1).astype(str)
+
+        hover_text: str = "<br />Leaf number: " \
+            + ";<br />Leaf number: ".join(shift_size)
+
+        hover: np.ndarray = np.array(hover_text.split(";"))
+
+        new_hover: np.ndarray = np.char.add(
+            np.array(net_plot["data"][1]["hovertext"]).astype(str),
+            hover.astype(str)
+        )
+
+        net_plot["data"][1]["hovertext"] = new_hover
+
+        return net_plot
+
+
+def get_domain(path: str, code: int) -> "list[str]":
+    last_power = 0
+    cluster = ""
+
+    while code > 0:
+        power = 0
+
+        while 2 ** power < code:
+            power += 1
+
+        if power != 0:
+            power -= 1
+
+        if cluster != "":
+            cluster += "0" * (last_power - power - 1)
+
+        last_power = power
+        code -= 2 ** power
+        cluster += "1"
+
+    domain_list: "list[str]" = []
+
+    with open(path, "r", encoding="utf-8") as file:
+        for line in tqdm(list(file), "    PARSING pyHCA FILE"):
+            if line[0] != ">" and not line.startswith("cluster"):
+                continue
+
+            if line[0] == ">":
+                domain: str = line.split()[0][1:]
+                continue
+
+            if cluster == line.strip().split()[-1]:
+                domain_list += [domain]
+
+    
+    return domain_list
+
 
 if __name__ == "__main__":
+    PEITSCH_CODE: int = 5
+
+    domain_list: "list[str]" = get_domain(
+        "data/pyHCA_SCOPe_30identity_globular.out",
+        PEITSCH_CODE
+    )
+
     scope_tree: Scope = Scope("data/SCOPe_2.08_classification.txt")
 
-    with open("/home/lrouaud/Téléchargements/147_code_scope.txt", "r",
-              encoding="utf-8") as file:
-        for line in tqdm(list(file), "   PARSING DOMAIN LIST"):
-            scope_tree.add_domain(line.strip())
+    for domain in tqdm(list(domain_list), "   PARSING DOMAIN LIST"):
+        scope_tree.add_domain(domain)
 
-    log_size: np.ndarray = np.log(np.array(scope_tree.size) + 1)
-    size: "list[float]" = list(np.array(log_size) / max(log_size) * 40 + 10)
-
-    net_plot: object = igviz.plot(
-        G=scope_tree.tree,
-        title="",
-        color_method=scope_tree.color,
-        size_method=size,
-        layout="kamada",
-        colorscale=None,
-        node_opacity=1,
-        highlight_neighbours_on_hover=True,
-        transparent_background=False,
-        showlegend=True
-    )
-
-    net_plot.update_traces(
-        marker_showscale=False,
-        line_color="white",
-        line_width=1
-    )
-
-    net_plot.update_layout(
-        template="plotly_dark",
-        legend_title=("<b>Network of SCOPe tree<br />classification for the"
-                      "<br />Peitsch code 147</b>"),
-        font=dict(size=14),
-        margin=dict(l=30, r=30, t=30, b=30)
-    )
-
-    net_plot["data"][0]["name"] = "Edges"
-    net_plot["data"][1]["name"] = "Nodes"
-
-    shift_size: np.ndarray = (np.array(scope_tree.size) + 1).astype(str)
-
-    hover_text: str = "<br />Leaf number: " \
-        + ";<br />Leaf number: ".join(shift_size)
-
-    hover: np.ndarray = np.array(hover_text.split(";"))
-
-    new_hover: np.ndarray = np.char.add(
-        np.array(net_plot["data"][1]["hovertext"]).astype(str),
-        hover.astype(str)
-    )
-
-    net_plot["data"][1]["hovertext"] = new_hover
-
-    net_plot.show()
+    scope_tree.plot_network(peitsch_code=PEITSCH_CODE).show()
