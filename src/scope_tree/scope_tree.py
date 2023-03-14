@@ -48,7 +48,7 @@ class Scope:
         self.color = [f"rgba{tuple(self.viridis[0])}"]
 
         # To obtain the number of leaves in a given nodes.
-        self.size = [0]
+        self.size = [-1]
         self.index = {"0": 0}
 
         # Parse a given SCOPe classification data file.
@@ -250,7 +250,7 @@ def get_domain(path: str, code: int) -> "list[str]":
 
 
 if __name__ == "__main__":
-    PEITSCH_CODE: int = 5
+    PEITSCH_CODE: int = 147
 
     domain_list: "list[str]" = get_domain(
         "data/pyHCA_SCOPe_30identity_globular.out",
