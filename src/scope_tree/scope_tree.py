@@ -16,6 +16,10 @@ import numpy as np
 
 # [M]
 from matplotlib import colormaps
+# [P]
+import plotly.graph_objects as go
+# [S]
+from statistics import median
 # [T]
 from tqdm import tqdm
 
@@ -129,15 +133,15 @@ class Scope:
         max_size -= min_size
 
         # Log the value to have a better view on the nodes' size diversity.
-        log_size: np.ndarray = np.log(np.array(scope_tree.size) + 1)
+        log_size: np.ndarray = np.log(np.array(self.size) + 1)
         size: "list[float]" = list(np.array(log_size) / max(log_size)
                                    * max_size + min_size)
 
         # Craft the network.
         net_plot: object = igviz.plot(
-            G=scope_tree.tree,
+            G=self.tree,
             title="",
-            color_method=scope_tree.color,
+            color_method=self.color,
             size_method=size,
             layout="kamada",
             colorscale=None,
@@ -168,7 +172,7 @@ class Scope:
         net_plot["data"][1]["name"] = "Nodes"
 
         # Add the size in the hover text.
-        shift_size: np.ndarray = (np.array(scope_tree.size) + 1).astype(str)
+        shift_size: np.ndarray = (np.array(self.size) + 1).astype(str)
 
         hover_text: str = "<br />Leaf number: " \
             + ";<br />Leaf number: ".join(shift_size)
@@ -181,6 +185,43 @@ class Scope:
         )
 
         net_plot["data"][1]["hovertext"] = new_hover
+
+        # To set x and y lim of the circle legends.
+        x_pos: float = max(list(net_plot["data"][1]["x"])) * 1.25
+        y_min: float = median(list(net_plot["data"][1]["y"]))
+        y_max: float = max(list(net_plot["data"][1]["y"]))
+        y_pos: np.ndarray = np.linspace(y_min, y_max, 5)
+
+        # Log the value to have a better view on the nodes' size diversity.
+        circle_size: np.ndarray = np.linspace(min(scope_tree.size),
+                                              max(scope_tree.size), 5)
+        log_size: np.ndarray = np.log(circle_size + 1)
+        size: "list[float]" = np.array(log_size) / max(log_size) * 40 + 10
+
+        # Add the circle legend (node size explanation).
+        side_plot: go.Scatter = go.Scatter(
+            mode="markers",
+            x=[x_pos] * 5,
+            y=y_pos,
+            marker=dict(color="white", size=size, opacity=1),
+            hoverinfo="skip",
+            name="Number of leaf"
+        )
+
+        net_plot.add_trace(side_plot)
+
+        # Add annotation of the circle to the plot.
+        for i, y in enumerate(y_pos):
+            net_plot.add_annotation(
+                xanchor="center",
+                yanchor="middle",
+                x=x_pos * 1.05,
+                y=y,
+                text=f"<b>{circle_size[i] + 1:.0f}</b>",
+                showarrow=False,
+                font_color="white",
+                align="center"
+            )
 
         return net_plot
 
@@ -259,7 +300,9 @@ if __name__ == "__main__":
 
     scope_tree: Scope = Scope("data/SCOPe_2.08_classification.txt")
 
-    for domain in tqdm(list(domain_list), "   PARSING DOMAIN LIST"):
+    for i, domain in tqdm(enumerate(domain_list), "   PARSING DOMAIN LIST"):
         scope_tree.add_domain(domain)
 
-    scope_tree.plot_network(peitsch_code=PEITSCH_CODE).show()
+    plot_distribution: go.FigureWidget = scope_tree.plot_network(
+        peitsch_code=PEITSCH_CODE
+    ).show()
