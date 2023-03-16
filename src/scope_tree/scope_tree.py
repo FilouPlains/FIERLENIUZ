@@ -55,6 +55,9 @@ class Scope:
         self.size = [-1]
         self.index = {"0": 0}
 
+        # Labels.
+        self.label: "list[str]" = []
+
         # Parse a given SCOPe classification data file.
         with open(path, "r", encoding="utf-8") as file:
             for line in tqdm(list(file), "    PARSING SCOPe FILE"):
@@ -87,6 +90,7 @@ class Scope:
         class_code: "str" = self.classification[domain].split(".")
         last: str = "0"
         self.size[0] += 1
+        self.label += [""]
 
         # To all SCOPe level of a given class like : a; a.1; a.1.1 and a.1.1.1
         for i in range(len(class_code)):
@@ -95,6 +99,11 @@ class Scope:
 
             # Is this a new node to add ?
             if node not in self.index:
+                if len(node) <= 1:
+                    self.label += [node]
+                else:
+                    self.label += [""]
+
                 self.size += [0]
                 self.index[node] = len(self.size) - 1
             else:
@@ -154,13 +163,13 @@ class Scope:
         # Modify traces attributs.
         net_plot.update_traces(
             marker_showscale=False,
-            line_color="white",
+            line_color="#444",
             line_width=1
         )
 
         # Modify the general layout.
         net_plot.update_layout(
-            template="plotly_dark",
+            plot_bgcolor="white",
             legend_title=("<b>Network of SCOPe tree<br />classification for the"
                           f"<br />Peitsch code {peitsch_code}</b>"),
             font=dict(size=14),
@@ -188,7 +197,7 @@ class Scope:
 
         # To set x and y lim of the circle legends.
         x_pos: float = max(list(net_plot["data"][1]["x"])) * 1.25
-        y_min: float = median(list(net_plot["data"][1]["y"]))
+        y_min: float = median(list(net_plot["data"][1]["y"])) * 1.2
         y_max: float = max(list(net_plot["data"][1]["y"]))
         y_pos: np.ndarray = np.linspace(y_min, y_max, 5)
 
@@ -196,14 +205,15 @@ class Scope:
         circle_size: np.ndarray = np.linspace(min(scope_tree.size),
                                               max(scope_tree.size), 5)
         log_size: np.ndarray = np.log(circle_size + 1)
-        size: "list[float]" = np.array(log_size) / max(log_size) * 40 + 10
+        size: "list[float]" = np.array(log_size) / max(log_size) \
+            * max_size + min_size
 
         # Add the circle legend (node size explanation).
         side_plot: go.Scatter = go.Scatter(
             mode="markers",
             x=[x_pos] * 5,
             y=y_pos,
-            marker=dict(color="white", size=size, opacity=1),
+            marker=dict(color="#444", size=size, opacity=1),
             hoverinfo="skip",
             name="Number of leaf"
         )
@@ -215,13 +225,25 @@ class Scope:
             net_plot.add_annotation(
                 xanchor="center",
                 yanchor="middle",
-                x=x_pos * 1.05,
+                x=x_pos * 0.85,
                 y=y,
                 text=f"<b>{circle_size[i] + 1:.0f}</b>",
                 showarrow=False,
-                font_color="white",
+                font_color="#444",
                 align="center"
             )
+
+        net_plot.add_shape(
+            type="rect",
+            xref="paper",
+            yref="paper",
+            x0=0,
+            y0=0,
+            x1=1.0,
+            y1=1.0,
+            opacity=1,
+            line=dict(color="rgba(0, 0, 0, 1)", width=1)
+        )
 
         return net_plot
 
@@ -291,18 +313,44 @@ def get_domain(path: str, code: int) -> "list[str]":
 
 
 if __name__ == "__main__":
-    PEITSCH_CODE: int = 147
+    PEITSCH_CODE: int = [147, 201, 921]
 
-    domain_list: "list[str]" = get_domain(
-        "data/pyHCA_SCOPe_30identity_globular.out",
-        PEITSCH_CODE
-    )
+    for code in PEITSCH_CODE:
+        domain_list: "list[str]" = get_domain(
+            "data/pyHCA_SCOPe_30identity_globular.out",
+            code
+        )
 
-    scope_tree: Scope = Scope("data/SCOPe_2.08_classification.txt")
+        scope_tree: Scope = Scope("data/SCOPe_2.08_classification.txt")
 
-    for i, domain in tqdm(enumerate(domain_list), "   PARSING DOMAIN LIST"):
-        scope_tree.add_domain(domain)
+        for i, domain in tqdm(enumerate(domain_list), "   PARSING DOMAIN LIST"):
+            scope_tree.add_domain(domain)
 
-    plot_distribution: go.FigureWidget = scope_tree.plot_network(
-        peitsch_code=PEITSCH_CODE
-    ).show()
+        plot: go.FigureWidget = scope_tree.plot_network(
+            peitsch_code=code
+        )
+
+        for i, label in enumerate(plot["data"][1]["hovertext"]):
+            node_name: str = label.split("<br>")[0]
+            
+            if node_name[-1] == "0":
+                continue
+            if len(node_name) != 7:
+                continue
+            else:
+                plot.add_annotation(
+                    xanchor="center",
+                    yanchor="middle",
+                    x=plot["data"][1]["x"][i],
+                    y=plot["data"][1]["y"][i],
+                    text=f"<b>{node_name[-1]}</b>",
+                    showarrow=False,
+                    font_color="white",
+                    align="center"
+                )
+
+        plot.write_html(
+            f"/home/lrouaud/Téléchargements/{code}_network.html",
+            full_html=False,
+            include_plotlyjs="../../node_modules/plotly.js-dist-min/plotly.min.js"
+        )
