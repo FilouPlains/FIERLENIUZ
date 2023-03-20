@@ -237,7 +237,7 @@ class PairewiseContextAnalyzer:
         different, and the distance link to `onp_sequence_comparison` is equal
         to the sum of length of both sequences.
         """
-        if self.seq_a == self.seq_b:
+        if list(self.seq_a) == list(self.seq_b):
             self.distance = [0.0, 0.0]
             return None
 
