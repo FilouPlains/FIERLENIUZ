@@ -402,7 +402,8 @@ def center_context(
     context: "np.ndarray",
     window: int,
     center: "str | int | float",
-    gap_symbol: "str | int | float" = "-"
+    gap_symbol: "str | int | float" = "-",
+    add_gap: bool = True
 ) -> np.ndarray:
     """Center a set of context. The context have to be in a format like:
 
@@ -444,6 +445,9 @@ def center_context(
     gap_symbol : `str | int | float`
         A gap symbol to insert when no item can be kept around `center` for a
         given `window`. By default, "-" is the symbol.
+    
+    add_gap: `bool`
+        If `True` add gap symbols, else, do not.
 
     Returns
     -------
@@ -469,7 +473,7 @@ def center_context(
             # To check to the left that we are not "out of bound". If so, we
             # have to insert gap.
             if i - window < 0:
-                left_gap: int = -(i - window)
+                left_gap: int = -(i - window) * add_gap
                 left_sentence: list = list(sentence[:i])
             else:
                 left_gap: int = 0
@@ -478,7 +482,7 @@ def center_context(
             # To check to the right that we are not "out of bound". If so, we
             # have to insert gap.
             if sentence.shape[0] <= i + window + 1:
-                right_gap: int = i + window - sentence.shape[0] + 1
+                right_gap: int = (i + window - sentence.shape[0] + 1) * add_gap
                 right_sentence: list = list(sentence[i + 1:])
             else:
                 right_gap: int = 0
@@ -489,7 +493,7 @@ def center_context(
                                   [sentence[i]] + right_sentence
                                   + right_gap * [gap_symbol]]
 
-    return np.array(formatted_context)
+    return np.array(formatted_context, dtype=object)
 
 
 def intersection(
@@ -586,7 +590,8 @@ if __name__ == "__main__":
         context=np.array([[2], [0, 2, 1], [1, 2, 3, 4], [2, 1, 2, 3, 4]],
                          dtype=object),
         window=2,
-        center=2
+        center=2,
+        add_gap=False
     )
 
     print("f_context= \n", f_context, "\n")
