@@ -147,7 +147,7 @@ class PairewiseContextAnalyzer:
                 break
 
         # Sequence difference and double of p.
-        self.distance[0] = delta + 2 * p
+        self.distance[0] = (delta + 2 * p) / (self.len_a + self.len_b)
 
     def __snake(self, i: int, y: int) -> int:
         """Snake function to follow diagonal edges.
@@ -244,7 +244,7 @@ class PairewiseContextAnalyzer:
         self.bray_curtis()
 
         if self.distance[1] == 1.0:
-            self.distance[0] = self.len_a + self.len_b
+            self.distance[0] = 1.0
         else:
             self.onp_sequence_comparison()
 
