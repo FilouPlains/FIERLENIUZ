@@ -23,6 +23,15 @@ from statistics import median
 # [T]
 from tqdm import tqdm
 
+# [M]
+from matplotlib import colormaps
+
+from sys import path
+
+# Checking parent directory.
+path.append("src/embeddings/")
+
+from context_analyzer import PairewiseContextAnalyzer, center_context
 
 class Scope:
     """An object to manipulate SCOPe classification.
@@ -31,12 +40,15 @@ class Scope:
     def __init__(
         self,
         path: str,
+        order_matrix: np.ndarray,
+        unorder_matrix: np.ndarray,
+        index_dict: "dict[str : int]"
     ) -> None:
         """Instantiate a `Scope` object.
 
         Parameters
         ----------
-        path : str
+        path : `str`
             A path to a SCOPe classification data file.
         """
         # To go from domain to SCOPe classification code.
@@ -52,11 +64,19 @@ class Scope:
         self.color = [f"rgba{tuple(self.viridis[0])}"]
 
         # To obtain the number of leaves in a given nodes.
-        self.size = [-1]
-        self.index = {"0": 0}
+        self.size: "list[int]" = [-1]
+        self.index: "dict[str : int]" = {"0": 0}
+        self.absolute_size: "dict[str : int]" = {"0": 0}
+        self.order_abs_size: "list[int]" = []
 
         # Labels.
         self.label: "list[str]" = []
+
+        self.order_matrix: np.ndarray = order_matrix
+        self.unorder_matrix: np.ndarray = unorder_matrix
+        self.index_dict: "dict[str : int]" = index_dict
+
+        self.matrix_index: "list[list[int]]" = [[]]
 
         # Parse a given SCOPe classification data file.
         with open(path, "r", encoding="utf-8") as file:
@@ -67,29 +87,49 @@ class Scope:
 
                 split_line: "list[str]" = line.split()
 
+                if len(split_line[2]) <= 5:
+                    if split_line[2] not in self.absolute_size:
+                        self.absolute_size[split_line[2]] = 0
+
                 # Skip the line containing other things than domains.
                 if split_line[3] == "-":
                     continue
 
+                self.absolute_size["0"] += 1
+                split_class: "list[str]" = split_line[2].split(".")
+
+                for i in range(4):
+                    normal_class: str = ".".join(split_class[:i + 1])
+
+                    if normal_class not in self.absolute_size:
+                        self.absolute_size[normal_class] = 1
+                    else:
+                        self.absolute_size[normal_class] += 1
+
                 # Adding a domain to the classification dictionary.
                 self.classification[split_line[3]] = split_line[2]
+
+        self.order_abs_size += [self.absolute_size["0"]]
 
     def add_domain(self, domain: str) -> None:
         """Add a domain to the network graph.
 
         Parameters
         ----------
-        domain : str
+        domain : `str`
             The domain to add.
         """
         # To check if the domain is in the classification dictionary.
         if domain not in self.classification:
+            print(f"[Warn##] Domain [{domain}] is not in the SCOPe "
+                  "classification dictionary, skipping...")
             return None
 
         # Transform `a.1.1.1` in a list like `["a", "1", "1", "1"]`
         class_code: "str" = self.classification[domain].split(".")
         last: str = "0"
         self.size[0] += 1
+        self.matrix_index[0] += [self.index_dict[domain]]
         self.label += [""]
 
         # To all SCOPe level of a given class like : a; a.1; a.1.1 and a.1.1.1
@@ -99,16 +139,20 @@ class Scope:
 
             # Is this a new node to add ?
             if node not in self.index:
+                self.order_abs_size += [self.absolute_size[node]]
+
                 if len(node) <= 1:
                     self.label += [node]
                 else:
                     self.label += [""]
 
-                self.size += [0]
+                self.size += [1]
+                self.matrix_index += [[self.index_dict[domain]]]
                 self.index[node] = len(self.size) - 1
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
+                self.matrix_index[self.index[node]] += [self.index_dict[domain]]
 
             # If it's a new node, add its colour to the colour list.
             if node not in self.tree:
@@ -121,7 +165,8 @@ class Scope:
         self,
         peitsch_code: "int | str",
         min_size: int = 10,
-        max_size: int = 50
+        max_size: int = 50,
+        to_percent: bool = True
     ) -> object:
         """Plot a network graph using plotly.
 
@@ -139,18 +184,74 @@ class Scope:
         object
             A plotly plot.
         """
+        unorder_color: "list[int]" = []
+        order_color: "list[int]" = []
+
+        for m_i in tqdm(self.matrix_index, "  COMPUTING COLORATION"):
+            if len(m_i) == 1:
+                print(self.order_matrix[m_i, :][:, m_i])
+                order_color += [-1]
+                unorder_color += [-1]
+            else:
+                flat: np.ndarray = self.order_matrix[m_i, :][:, m_i].flatten()
+                flat_sum = sum(sum(i) for i in zip(*flat[flat != 0]))
+
+                length: int = sum(len(i) for i in zip(*flat[flat != 0]))
+                to_mean: int = (length ** 2 - length) / 2
+
+                if flat_sum / 2 / to_mean > 1:
+                    print(flat_sum / 2 / to_mean)
+
+                order_color += [flat_sum / 2 / to_mean]
+
+                flat: np.ndarray = self.unorder_matrix[m_i, :][:, m_i].flatten()
+                flat_sum = sum(sum(i) for i in zip(*flat[flat != 0]))
+
+                length: int = sum(len(i) for i in zip(*flat[flat != 0]))
+                to_mean: int = (length ** 2 - length) / 2
+
+                if flat_sum / 2 / to_mean > 1:
+                    print(flat_sum / 2 / to_mean)
+
+                unorder_color += [flat_sum / 2 / to_mean]
+
+        order_color = np.array(order_color)
+
+        cmap: object = colormaps["inferno_r"]
+        v_order: np.ndarray = cmap(order_color)
+        v_order *= np.array([255, 255, 255, 1])
+        v_order = np.array(list(map(lambda line: f"rgba{tuple(line)}", v_order)))
+        v_order[order_color == -1] = "rgba(150, 150, 150, 0.5)"
+        v_order = list(v_order)
+
+        unorder_color = np.array(unorder_color)
+
+        cmap: object = colormaps["inferno_r"]
+        v_unorder: np.ndarray = cmap(unorder_color)
+        v_unorder *= np.array([255, 255, 255, 1])
+        v_unorder = np.array(list(map(lambda line: f"rgba{tuple(line)}",
+                                      v_unorder)))
+        v_unorder[unorder_color == -1] = "rgba(150, 150, 150, 0.5)"
+        v_unorder = list(v_unorder)
+
         max_size -= min_size
 
-        # Log the value to have a better view on the nodes' size diversity.
-        log_size: np.ndarray = np.log(np.array(self.size) + 1)
-        size: "list[float]" = list(np.array(log_size) / max(log_size)
-                                   * max_size + min_size)
+        if to_percent:
+            # Percentage of the leaves size values.
+            size: "list[float]" = list(np.array(self.size) /
+                                       np.array(self.order_abs_size) * max_size
+                                       + min_size)
+        else:
+            # Log the value to have a better view on the nodes' size diversity.
+            log_size: np.ndarray = np.log(np.array(self.size) + 1)
+            size: "list[float]" = list(np.array(log_size) / max(log_size)
+                                       * max_size + min_size)
 
         # Craft the network.
         net_plot: object = igviz.plot(
             G=self.tree,
             title="",
-            color_method=self.color,
+            color_method=v_unorder,
             size_method=size,
             layout="kamada",
             colorscale=None,
@@ -163,7 +264,7 @@ class Scope:
         # Modify traces attributs.
         net_plot.update_traces(
             marker_showscale=False,
-            line_color="#444",
+            line_color="#DDD",
             line_width=1
         )
 
@@ -173,7 +274,35 @@ class Scope:
             legend_title=("<b>Network of SCOPe tree<br />classification for the"
                           f"<br />Peitsch code {peitsch_code}</b>"),
             font=dict(size=14),
-            margin=dict(l=30, r=30, t=30, b=30)
+            margin=dict(l=30, r=30, t=30, b=30),
+            coloraxis_showscale=True
+            # updatemenus=[
+            #     dict(
+            #         buttons=list([
+            #             dict(
+            #                 args=["marker", dict(color=v_unorder, size=size,
+            #                       opacity=1)],
+            #                 label="Bray-Curtis<br />distance",
+            #                 method="restyle"
+            #             ),
+            #             dict(
+            #                 args=["marker", dict(color=v_order, size=size,
+            #                       opacity=1)],
+            #                 label="O(NP)",
+            #                 method="restyle"
+            #             )
+            #     ]),
+            #     type="buttons",
+            #     direction="right",
+            #     pad={"r": 10, "t": 10},
+            #     showactive=True,
+            #     x=0,
+            #     xanchor="left",
+            #     y=1.47,
+            #     yanchor="bottom",
+            #     font_color="black"
+            #     )
+            # ]
         )
 
         # Modify legends' labels.
@@ -181,17 +310,27 @@ class Scope:
         net_plot["data"][1]["name"] = "Nodes"
 
         # Add the size in the hover text.
-        shift_size: np.ndarray = (np.array(self.size) + 1).astype(str)
+        order_hover: np.ndarray = np.array(order_color) * 100
+        unorder_hover: np.ndarray = np.array(unorder_color) * 100
+        percent_hover: np.ndarray = (np.array(size) - 10) / 4 * 10
 
-        hover_text: str = "<br />Leaf number: " \
-            + ";<br />Leaf number: ".join(shift_size)
+        new_hover: "list[str]" = []
+        
+        for i, shift in enumerate(tqdm(self.size, "       MODIFYING HOVER")):
+            if order_hover[i] < 0:
+                order: str = f"Order context: None<br>"
+            else:
+                order: str = f"Order context: {order_hover[i]:.1f}<br>"
 
-        hover: np.ndarray = np.array(hover_text.split(";"))
+            if unorder_hover[i] < 0:
+                unorder: str = f"Unorder context: None<br>"
+            else:
+                unorder: str = f"Unorder context: {unorder_hover[i]:.1f}<br>"
 
-        new_hover: np.ndarray = np.char.add(
-            np.array(net_plot["data"][1]["hovertext"]).astype(str),
-            hover.astype(str)
-        )
+            new_hover += [f"Leaf number: {shift}<br>"
+                          f"{unorder}{order}"
+                          f"Relative size: {percent_hover[i]:.1f} %<br>"
+                          f"{net_plot['data'][1]['hovertext'][i]}"]
 
         net_plot["data"][1]["hovertext"] = new_hover
 
@@ -202,34 +341,71 @@ class Scope:
         y_pos: np.ndarray = np.linspace(y_min, y_max, 5)
 
         # Log the value to have a better view on the nodes' size diversity.
-        circle_size: np.ndarray = np.linspace(min(scope_tree.size),
-                                              max(scope_tree.size), 5)
-        log_size: np.ndarray = np.log(circle_size + 1)
-        size: "list[float]" = np.array(log_size) / max(log_size) \
-            * max_size + min_size
+        circle_size: np.ndarray = np.linspace(min(size), max(size), 5)
 
         # Add the circle legend (node size explanation).
         side_plot: go.Scatter = go.Scatter(
             mode="markers",
             x=[x_pos] * 5,
             y=y_pos,
-            marker=dict(color="#444", size=size, opacity=1),
+            marker=dict(color="#000", size=circle_size, opacity=1),
             hoverinfo="skip",
-            name="Number of leaf"
+            name="Relative size to SCOPe<br />count"
+        )
+
+        # Add the circle legend (node size explanation).
+        legend_plot: go.Scatter = go.Scatter(
+            mode="markers",
+            x=[None],
+            y=[None],
+            marker=dict(color="rgba(150, 150, 150, 0.5)", size=50, opacity=1),
+            hoverinfo="skip",
+            name="Context not computed"
+        )
+
+        ticks: "list[int]" = list(np.linspace(
+            0,
+            100,
+            5
+        ).astype(int))
+        
+        colorbar_plot: go.Scatter = go.Scatter(
+            mode="markers",
+            x=[None],
+            y=[None],
+            marker = dict(
+                color="rgba(0, 0, 0, 0)",
+                opacity=0,
+                colorbar=dict(
+                    title="Bray-Curtis<br />distance",
+                    tickvals=ticks,
+                    ticktext=ticks,
+                    lenmode="pixels",
+                    len=200,
+                    yanchor="bottom",
+                    y=0,
+                ),
+                colorscale="inferno_r",
+                cmin=0,
+                cmax=100
+            ),
+            name=""
         )
 
         net_plot.add_trace(side_plot)
+        net_plot.add_trace(legend_plot)
+        net_plot.add_trace(colorbar_plot)
 
-        # Add annotation of the circle to the plot.
+        # To add the legend of the grey transparent nodes.
         for i, y in enumerate(y_pos):
             net_plot.add_annotation(
                 xanchor="center",
                 yanchor="middle",
                 x=x_pos * 0.85,
                 y=y,
-                text=f"<b>{circle_size[i] + 1:.0f}</b>",
+                text=f"<b>{(circle_size[i] - 10) / 4 * 10:.0f}</b>",
                 showarrow=False,
-                font_color="#444",
+                font_color="#000",
                 align="center"
             )
 
@@ -248,7 +424,7 @@ class Scope:
         return net_plot
 
 
-def get_domain(path: str, code: int) -> "list[str]":
+def get_domain(path: str, code: int) -> "tuple":
     """Get a domain list from a given Peitsch code.
 
     Parameters
@@ -289,6 +465,9 @@ def get_domain(path: str, code: int) -> "list[str]":
         cluster += "1"
 
     domain_list: "list[str]" = []
+    context_dict: "dict[str : list]" = {}
+    in_domain: bool = False
+    domain: str = ""
 
     # Parse the file to check if a given cluster is in a domain.
     with open(path, "r", encoding="utf-8") as file:
@@ -299,31 +478,86 @@ def get_domain(path: str, code: int) -> "list[str]":
 
             # Domaine line.
             if line[0] == ">":
-                domain: str = line.split()[0][1:]
+                if in_domain:
+                    context_dict[domain] = list(center_context(
+                        context=np.array([context]),
+                        window=10,
+                        center=cluster,
+                        add_gap=False
+                    ))
+
+                domain = "d" + line.split()[0][2:]
+                context: "list[str]" = []
+                in_domain = False
                 continue
+
+            hc: str = line.strip().split()[-1]
+            context += [hc]
 
             # Cluster line: if we found the exact same cluster, add it to our
             # list.
-            if cluster == line.strip().split()[-1]:
-                domain_list += [domain]
+            if cluster != hc:
+                continue
+
+            in_domain |= True
+            domain_list += [domain]
+
+    length: int = 0
+    keys: "list[str]" = []
+
+    for key in context_dict:
+        key_len: int = len(context_dict[key])
+
+        length += key_len
+        keys += [key] * key_len
+
+    index_dict: "dict[str, int]" = dict(zip(keys, range(length)))
+    order_matrix: np.ndarray = np.zeros((length, length), dtype=object)
+    unorder_matrix: np.ndarray = np.zeros((length, length), dtype=object)
+
+    for shift_i, i in enumerate(tqdm(keys[:-1], "    MATRIX COMPUTATION")):
+        for j in keys[shift_i + 1:]:
+            order: "list[float]" = []
+            unorder: "list[float]" = []
+
+            context_a: "list[str]" = context_dict[i] + context_dict[j]
+            context_b: "list[str]" = context_dict[i] + context_dict[j]
+
+            for shift_a, a in enumerate(context_a[:-1]):
+                for b in context_b[shift_a + 1:]:
+                    Context: object = PairewiseContextAnalyzer(a, b)
+                    Context.compute_distance()
+                    order += [Context.distance[0]]
+                    unorder += [Context.distance[1]]
+
+            order_matrix[index_dict[i]][index_dict[j]] = order
+            order_matrix[index_dict[j]][index_dict[i]] = order
+
+            unorder_matrix[index_dict[i]][index_dict[j]] = unorder
+            unorder_matrix[index_dict[j]][index_dict[i]] = unorder
 
     # Return a list of unique elements, as far as a same Peitsch code can be
     # multiple time in the same domain.
-    return list(set(domain_list))
+    return list(set(domain_list)), [order_matrix, unorder_matrix, index_dict]
 
 
 if __name__ == "__main__":
     PEITSCH_CODE: int = [147, 201, 921]
 
     for code in PEITSCH_CODE:
-        domain_list: "list[str]" = get_domain(
+        domain_list, data_list = get_domain(
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
 
-        scope_tree: Scope = Scope("data/SCOPe_2.08_classification.txt")
+        scope_tree: Scope = Scope(
+            "data/SCOPe_2.08_classification.txt",
+            order_matrix=data_list[0],
+            unorder_matrix=data_list[1],
+            index_dict=data_list[2]
+        )
 
-        for i, domain in tqdm(enumerate(domain_list), "   PARSING DOMAIN LIST"):
+        for i, domain in enumerate(tqdm(domain_list, "   PARSING DOMAIN LIST")):
             scope_tree.add_domain(domain)
 
         plot: go.FigureWidget = scope_tree.plot_network(
@@ -331,7 +565,7 @@ if __name__ == "__main__":
         )
 
         for i, label in enumerate(plot["data"][1]["hovertext"]):
-            node_name: str = label.split("<br>")[0]
+            node_name: str = label.split("<br>")[-2]
             
             if node_name[-1] == "0":
                 continue
@@ -343,14 +577,18 @@ if __name__ == "__main__":
                     yanchor="middle",
                     x=plot["data"][1]["x"][i],
                     y=plot["data"][1]["y"][i],
-                    text=f"<b>{node_name[-1]}</b>",
+                    text=f"<b> {node_name[-1]} </b>",
                     showarrow=False,
-                    font_color="white",
-                    align="center"
+                    font_color="black",
+                    align="center",
+                    font = dict(size=14),
+                    bgcolor="rgba(255, 255, 255, 0.6)"
                 )
 
         plot.write_html(
             f"/home/lrouaud/Téléchargements/{code}_network.html",
             full_html=False,
-            include_plotlyjs="../../node_modules/plotly.js-dist-min/plotly.min.js"
+            include_plotlyjs="cdn"
+            # include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
+            #                   "plotly.min.js")
         )
