@@ -503,28 +503,43 @@ def get_domain(path: str, code: int) -> "tuple":
             domain_list += [domain]
 
     length: int = 0
-    keys: "list[str]" = []
 
-    for key in context_dict:
-        key_len: int = len(context_dict[key])
+    for content in context_dict.values():
+        length += len(content)
 
-        length += key_len
-        keys += [key] * key_len
+    keys: "list[str]" = list(context_dict.keys())
 
-    index_dict: "dict[str, int]" = dict(zip(keys, range(length)))
     order_matrix: np.ndarray = np.zeros((length, length), dtype=object)
     unorder_matrix: np.ndarray = np.zeros((length, length), dtype=object)
+
+    index_dict: "dict[str, int]" = {}
+    domain_dict: "dict[str, int]" = {}
+
+    index: int = 0
 
     for shift_i, i in enumerate(tqdm(keys[:-1], "    MATRIX COMPUTATION")):
         for j in keys[shift_i + 1:]:
             order: "list[float]" = []
             unorder: "list[float]" = []
 
-            context_a: "list[str]" = context_dict[i] + context_dict[j]
-            context_b: "list[str]" = context_dict[i] + context_dict[j]
+            context: "list[str]" = context_dict[i] + context_dict[j]
 
-            for shift_a, a in enumerate(context_a[:-1]):
-                for b in context_b[shift_a + 1:]:
+            for pos_a, a in enumerate(context[:-1]):
+                for pos_b, b in enumerate(context[pos_a + 1:]):
+                    dict_key_a: str = f"{domain}_{pos_a}"
+                    dict_key_b: str = f"{domain}_{pos_b + 1}"
+
+                    if dict_key_a not in index_dict:
+                        index_dict[dict_key_a] = index
+                        domain_dict[] =
+
+                        index += 1
+                    elif dict_key_b not in index_dict:
+                        index_dict[dict_key_b] = index
+                        domain_dict[] =
+
+                        index += 1
+
                     Context: object = PairewiseContextAnalyzer(a, b)
                     Context.compute_distance()
                     order += [Context.distance[0]]
@@ -549,6 +564,8 @@ if __name__ == "__main__":
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
+        
+        exit()
 
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
