@@ -604,6 +604,17 @@ if __name__ == "__main__":
     print("f_context= \n", f_context, "\n")
 
     f_context: np.ndarray = center_context(
+        context=np.array([[2], [0, 2, 1], [1, 2, 3, 4], [2, 1, 2, 3, 4]],
+                         dtype=object),
+        window=2,
+        center=2,
+        add_gap=False,
+        keep_center=False
+    )
+
+    print("f_context= \n", f_context, "\n")
+
+    f_context: np.ndarray = center_context(
         context=np.array([[2, 1], [0, 2, 1], [1, 2, 1, 4], [2, 1, 1, 4]],
                          dtype=object),
         window=2,
