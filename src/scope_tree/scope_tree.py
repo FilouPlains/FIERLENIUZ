@@ -152,8 +152,7 @@ class Scope:
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
-                self.matrix_index[self.index[node]
-                                  ] += [self.index_dict[domain]]
+                self.matrix_index[self.index[node]] += [self.index_dict[domain]]
 
             # If it's a new node, add its colour to the colour list.
             if node not in self.tree:
@@ -486,7 +485,8 @@ def get_domain(path: str, code: int) -> "tuple":
                         context=np.array([context]),
                         window=10,
                         center=cluster,
-                        add_gap=False
+                        add_gap=False,
+                        keep_center=False
                     ))
 
                 domain = "d" + line.split()[0][2:]
@@ -533,6 +533,9 @@ def get_domain(path: str, code: int) -> "tuple":
                 + list(range(len(context_dict[j])))
 
             for pos_a, a in enumerate(context[:-1]):
+                if len(a) <= 0:
+                    continue
+
                 dict_key_a: str = f"{d_cont[pos_a]}_{n_cont[pos_a]}"
 
                 if dict_key_a not in index_dict:
@@ -547,6 +550,9 @@ def get_domain(path: str, code: int) -> "tuple":
                     domain_dict[d_cont[pos_a]] += [i_a]
 
                 for pos_b, b in enumerate(context[pos_a + 1:]):
+                    if len(b) <= 0:
+                        continue
+
                     pos_b += 1
 
                     dict_key_b: str = f"{d_cont[pos_b]}_{n_cont[pos_b]}"
@@ -586,7 +592,7 @@ if __name__ == "__main__":
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
-
+        
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
             order_matrix=data_list[0],
