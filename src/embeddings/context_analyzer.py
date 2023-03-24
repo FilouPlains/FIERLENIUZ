@@ -403,7 +403,8 @@ def center_context(
     window: int,
     center: "str | int | float",
     gap_symbol: "str | int | float" = "-",
-    add_gap: bool = True
+    add_gap: bool = True,
+    keep_center: bool = True
 ) -> np.ndarray:
     """Center a set of context. The context have to be in a format like:
 
@@ -445,9 +446,15 @@ def center_context(
     gap_symbol : `str | int | float`
         A gap symbol to insert when no item can be kept around `center` for a
         given `window`. By default, "-" is the symbol.
-    
+
     add_gap: `bool`
-        If `True` add gap symbols, else, do not.
+        If `True` add gap symbols, else, do not. By default, set to `True`.
+    
+    keep_center: `bool`
+        If `True` keep the word where we center the context around. If we have
+        `[1, 2, 3, [4], 5, 6, 7]` (with `[4]` our center word) and we put this
+        option to `False`, we will obtain in output `[1, 2, 3, 5, 6, 7]`. By
+        default, set to `True`.
 
     Returns
     -------
@@ -490,7 +497,7 @@ def center_context(
 
             # The new centered and formatted context.
             formatted_context += [left_gap * [gap_symbol] + left_sentence +
-                                  [sentence[i]] + right_sentence
+                                  [sentence[i]] * keep_center + right_sentence
                                   + right_gap * [gap_symbol]]
 
     return np.array(formatted_context, dtype=object)
