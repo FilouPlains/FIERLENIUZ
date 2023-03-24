@@ -152,7 +152,8 @@ class Scope:
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
-                self.matrix_index[self.index[node]] += [self.index_dict[domain]]
+                self.matrix_index[self.index[node]
+                                  ] += [self.index_dict[domain]]
 
             # If it's a new node, add its colour to the colour list.
             if node not in self.tree:
@@ -204,7 +205,8 @@ class Scope:
 
                 order_color += [flat_sum / 2 / to_mean]
 
-                flat: np.ndarray = self.unorder_matrix[m_i, :][:, m_i].flatten()
+                flat: np.ndarray = self.unorder_matrix[m_i, :][:, m_i].flatten(
+                )
                 flat_sum = sum(sum(i) for i in zip(*flat[flat != 0]))
 
                 length: int = sum(len(i) for i in zip(*flat[flat != 0]))
@@ -220,7 +222,8 @@ class Scope:
         cmap: object = colormaps["inferno_r"]
         v_order: np.ndarray = cmap(order_color)
         v_order *= np.array([255, 255, 255, 1])
-        v_order = np.array(list(map(lambda line: f"rgba{tuple(line)}", v_order)))
+        v_order = np.array(
+            list(map(lambda line: f"rgba{tuple(line)}", v_order)))
         v_order[order_color == -1] = "rgba(150, 150, 150, 0.5)"
         v_order = list(v_order)
 
@@ -315,7 +318,7 @@ class Scope:
         percent_hover: np.ndarray = (np.array(size) - 10) / 4 * 10
 
         new_hover: "list[str]" = []
-        
+
         for i, shift in enumerate(tqdm(self.size, "       MODIFYING HOVER")):
             if order_hover[i] < 0:
                 order: str = f"Order context: None<br>"
@@ -368,12 +371,12 @@ class Scope:
             100,
             5
         ).astype(int))
-        
+
         colorbar_plot: go.Scatter = go.Scatter(
             mode="markers",
             x=[None],
             y=[None],
-            marker = dict(
+            marker=dict(
                 color="rgba(0, 0, 0, 0)",
                 opacity=0,
                 colorbar=dict(
@@ -509,8 +512,8 @@ def get_domain(path: str, code: int) -> "tuple":
 
     keys: "list[str]" = list(context_dict.keys())
 
-    order_matrix: np.ndarray = np.zeros((length, length), dtype=object)
-    unorder_matrix: np.ndarray = np.zeros((length, length), dtype=object)
+    order_matrix: np.ndarray = np.zeros((length, length), dtype=float)
+    unorder_matrix: np.ndarray = np.zeros((length, length), dtype=float)
 
     index_dict: "dict[str, int]" = {}
     domain_dict: "dict[str, int]" = {}
@@ -524,36 +527,55 @@ def get_domain(path: str, code: int) -> "tuple":
 
             context: "list[str]" = context_dict[i] + context_dict[j]
 
+            d_cont: "list[str]" = [i] * len(context_dict[i]) \
+                + [j] * len(context_dict[j])
+            n_cont: "list[int]" = list(range(len(context_dict[i]))) \
+                + list(range(len(context_dict[j])))
+
             for pos_a, a in enumerate(context[:-1]):
+                dict_key_a: str = f"{d_cont[pos_a]}_{n_cont[pos_a]}"
+
+                if dict_key_a not in index_dict:
+                    index_dict[dict_key_a] = index
+                    index += 1
+
+                i_a: int = index_dict[dict_key_a]
+
+                if d_cont[pos_a] not in domain_dict:
+                    domain_dict[d_cont[pos_a]] = [i_a]
+                else:
+                    domain_dict[d_cont[pos_a]] += [i_a]
+
                 for pos_b, b in enumerate(context[pos_a + 1:]):
-                    dict_key_a: str = f"{domain}_{pos_a}"
-                    dict_key_b: str = f"{domain}_{pos_b + 1}"
+                    pos_b += 1
 
-                    if dict_key_a not in index_dict:
-                        index_dict[dict_key_a] = index
-                        domain_dict[] =
+                    dict_key_b: str = f"{d_cont[pos_b]}_{n_cont[pos_b]}"
 
-                        index += 1
-                    elif dict_key_b not in index_dict:
+                    if dict_key_b not in index_dict:
                         index_dict[dict_key_b] = index
-                        domain_dict[] =
-
                         index += 1
+
+                    i_b: int = index_dict[dict_key_b]
+
+                    if d_cont[pos_b] not in domain_dict:
+                        domain_dict[d_cont[pos_b]] = [i_b]
+                    else:
+                        domain_dict[d_cont[pos_b]] += [i_b]
 
                     Context: object = PairewiseContextAnalyzer(a, b)
                     Context.compute_distance()
-                    order += [Context.distance[0]]
-                    unorder += [Context.distance[1]]
 
-            order_matrix[index_dict[i]][index_dict[j]] = order
-            order_matrix[index_dict[j]][index_dict[i]] = order
+                    order = Context.distance[0]
+                    unorder = Context.distance[1]
 
-            unorder_matrix[index_dict[i]][index_dict[j]] = unorder
-            unorder_matrix[index_dict[j]][index_dict[i]] = unorder
+                    order_matrix[i_a][i_b] = order
+                    order_matrix[i_b][i_a] = order
+                    unorder_matrix[i_a][i_b] = unorder
+                    unorder_matrix[i_b][i_a] = unorder
 
     # Return a list of unique elements, as far as a same Peitsch code can be
     # multiple time in the same domain.
-    return list(set(domain_list)), [order_matrix, unorder_matrix, index_dict]
+    return list(set(domain_list)), [order_matrix, unorder_matrix, domain_dict]
 
 
 if __name__ == "__main__":
@@ -564,8 +586,6 @@ if __name__ == "__main__":
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
-        
-        exit()
 
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
@@ -583,7 +603,7 @@ if __name__ == "__main__":
 
         for i, label in enumerate(plot["data"][1]["hovertext"]):
             node_name: str = label.split("<br>")[-2]
-            
+
             if node_name[-1] == "0":
                 continue
             if len(node_name) != 7:
@@ -598,7 +618,7 @@ if __name__ == "__main__":
                     showarrow=False,
                     font_color="black",
                     align="center",
-                    font = dict(size=14),
+                    font=dict(size=14),
                     bgcolor="rgba(255, 255, 255, 0.6)"
                 )
 
