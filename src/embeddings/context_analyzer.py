@@ -628,3 +628,53 @@ if __name__ == "__main__":
     Context.bray_curtis(skip_element=-1, do_skip=True)
     Context.dissimilarity()
     print(Context)
+    
+    print("┏━━━━━━━━━━━━━━━━━━━━━━━━┓")
+    print("┃     201 : CHECKING     ┃")
+    print("┗━━━━━━━━━━━━━━━━━━━━━━━━┛\n")
+
+    d1jqna: "list[int]" = [78060471881, 201, 1101, 9, 393, 8791, 1,
+                           26265, 9, 6449, 9, 11033, 102677, 11, 83, 17529,
+                           58827, 27, 5923, 49, 55595, 6445, 53, 37705, 57,
+                           203, 157, 215, 21, 201, 26291, 61, 393, 25, 43,
+                           69, 213, 339043, 628403, 9, 73, 29, 7, 19,
+                           153, 6327, 117859, 137, 93, 25, 3155, 355, 36497]
+    d1izca: "list[int]" = [141, 273, 209, 51, 1001041, 61, 81, 7, 37479, 1,
+                           5, 5, 15, 37449, 39, 57993, 201, 1579,
+                           51555633]
+    d1ujqa: "list[int]" = [17, 89, 39, 5, 674963, 453, 649, 81, 401,
+                           15, 657, 7, 38473, 201, 43, 73, 27, 27,
+                           13009]
+    d3i4ea: "list[int]" = [17, 145, 209, 27, 201, 148709, 35, 913, 5,
+                           27, 19635, 2658887, 9, 35, 7, 49, 19, 1093,
+                           79, 20753, 53, 81, 77936085713, 77, 9, 4497]
+
+
+    f_context: np.ndarray = center_context(
+        context=np.array([d1jqna, d1izca, d1ujqa, d3i4ea], dtype=object),
+        window=10,
+        center=201,
+        keep_center=False,
+        add_gap=False
+    )
+
+    print("f_context= \n", f_context, "\n")
+    
+    d_name: "list[str]" = ["c.1.12.3 - d1jqna", "c.1.12.3 - d1jqna",
+                           "c.1.12.5 - d1izca", "c.1.12.7 - d1ujqa",
+                           "c.1.12.7 - d3i4ea"]
+    summation: int = 0
+    count: int = 0
+
+    for i, d_i in enumerate(f_context[:-1]):
+        for j, d_j in enumerate(f_context[i + 1:]):
+            Context: object = PairewiseContextAnalyzer(d_i, d_j)
+            Context.compute_distance()
+
+            print(f">{d_name[i]} vs {d_name[j + 1 + i]}:")
+            print(f"{Context.distance[1] * 100:.1f}")
+            summation += Context.distance[1]
+            count += 1
+    
+    print(summation)
+    print(summation / count * 100)
