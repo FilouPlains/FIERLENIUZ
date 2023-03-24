@@ -129,7 +129,7 @@ class Scope:
         class_code: "str" = self.classification[domain].split(".")
         last: str = "0"
         self.size[0] += 1
-        self.matrix_index[0] += [self.index_dict[domain]]
+        self.matrix_index[0] += self.index_dict[domain]
         self.label += [""]
 
         # To all SCOPe level of a given class like : a; a.1; a.1.1 and a.1.1.1
@@ -147,12 +147,12 @@ class Scope:
                     self.label += [""]
 
                 self.size += [1]
-                self.matrix_index += [[self.index_dict[domain]]]
+                self.matrix_index += [self.index_dict[domain]]
                 self.index[node] = len(self.size) - 1
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
-                self.matrix_index[self.index[node]] += [self.index_dict[domain]]
+                self.matrix_index[self.index[node]] += self.index_dict[domain]
 
             # If it's a new node, add its colour to the colour list.
             if node not in self.tree:
@@ -188,33 +188,25 @@ class Scope:
         order_color: "list[int]" = []
 
         for m_i in tqdm(self.matrix_index, "  COMPUTING COLORATION"):
+            m_i = list(set(m_i))
+
             if len(m_i) == 1:
-                print(self.order_matrix[m_i, :][:, m_i])
                 order_color += [-1]
                 unorder_color += [-1]
             else:
-                flat: np.ndarray = self.order_matrix[m_i, :][:, m_i].flatten()
-                flat_sum = sum(sum(i) for i in zip(*flat[flat != 0]))
+                mat_sum: np.ndarray = np.sum(self.order_matrix[m_i, :][:, m_i])
+                length: int = self.order_matrix[m_i, :][:, m_i].shape[0]
+                to_mean: int = length ** 2 - length
 
-                length: int = sum(len(i) for i in zip(*flat[flat != 0]))
-                to_mean: int = (length ** 2 - length) / 2
+                order_color += [mat_sum / to_mean]
 
-                if flat_sum / 2 / to_mean > 1:
-                    print(flat_sum / 2 / to_mean)
-
-                order_color += [flat_sum / 2 / to_mean]
-
-                flat: np.ndarray = self.unorder_matrix[m_i, :][:, m_i].flatten(
+                mat_sum: np.ndarray = np.sum(
+                    self.unorder_matrix[m_i, :][:, m_i]
                 )
-                flat_sum = sum(sum(i) for i in zip(*flat[flat != 0]))
+                length: int = self.order_matrix[m_i, :][:, m_i].shape[0]
+                to_mean: int = length ** 2 - length
 
-                length: int = sum(len(i) for i in zip(*flat[flat != 0]))
-                to_mean: int = (length ** 2 - length) / 2
-
-                if flat_sum / 2 / to_mean > 1:
-                    print(flat_sum / 2 / to_mean)
-
-                unorder_color += [flat_sum / 2 / to_mean]
+                unorder_color += [mat_sum / to_mean]
 
         order_color = np.array(order_color)
 
@@ -278,33 +270,6 @@ class Scope:
             font=dict(size=14),
             margin=dict(l=30, r=30, t=30, b=30),
             coloraxis_showscale=True
-            # updatemenus=[
-            #     dict(
-            #         buttons=list([
-            #             dict(
-            #                 args=["marker", dict(color=v_unorder, size=size,
-            #                       opacity=1)],
-            #                 label="Bray-Curtis<br />distance",
-            #                 method="restyle"
-            #             ),
-            #             dict(
-            #                 args=["marker", dict(color=v_order, size=size,
-            #                       opacity=1)],
-            #                 label="O(NP)",
-            #                 method="restyle"
-            #             )
-            #     ]),
-            #     type="buttons",
-            #     direction="right",
-            #     pad={"r": 10, "t": 10},
-            #     showactive=True,
-            #     x=0,
-            #     xanchor="left",
-            #     y=1.47,
-            #     yanchor="bottom",
-            #     font_color="black"
-            #     )
-            # ]
         )
 
         # Modify legends' labels.
@@ -553,7 +518,7 @@ def get_domain(path: str, code: int) -> "tuple":
                     if len(b) <= 0:
                         continue
 
-                    pos_b += 1
+                    pos_b += 1 + pos_a
 
                     dict_key_b: str = f"{d_cont[pos_b]}_{n_cont[pos_b]}"
 
@@ -573,7 +538,7 @@ def get_domain(path: str, code: int) -> "tuple":
 
                     order = Context.distance[0]
                     unorder = Context.distance[1]
-
+                    
                     order_matrix[i_a][i_b] = order
                     order_matrix[i_b][i_a] = order
                     unorder_matrix[i_a][i_b] = unorder
@@ -592,7 +557,7 @@ if __name__ == "__main__":
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
-        
+
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
             order_matrix=data_list[0],
