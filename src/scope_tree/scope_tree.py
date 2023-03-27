@@ -129,7 +129,7 @@ class Scope:
         class_code: "str" = self.classification[domain].split(".")
         last: str = "0"
         self.size[0] += 1
-        self.matrix_index[0] += self.index_dict[domain]
+        self.matrix_index[0] += list(self.index_dict[domain])
         self.label += [""]
 
         # To all SCOPe level of a given class like : a; a.1; a.1.1 and a.1.1.1
@@ -139,6 +139,7 @@ class Scope:
 
             # Is this a new node to add ?
             if node not in self.index:
+
                 self.order_abs_size += [self.absolute_size[node]]
 
                 if len(node) <= 1:
@@ -147,12 +148,14 @@ class Scope:
                     self.label += [""]
 
                 self.size += [1]
-                self.matrix_index += [self.index_dict[domain]]
+                self.matrix_index += [list(self.index_dict[domain])]
                 self.index[node] = len(self.size) - 1
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
-                self.matrix_index[self.index[node]] += self.index_dict[domain]
+                self.matrix_index[self.index[node]] += list(
+                    self.index_dict[domain]
+                )
 
             # If it's a new node, add its colour to the colour list.
             if node not in self.tree:
@@ -187,9 +190,9 @@ class Scope:
         unorder_color: "list[int]" = []
         order_color: "list[int]" = []
 
-        for m_i in tqdm(self.matrix_index, "  COMPUTING COLORATION"):
+        for i, m_i in enumerate(tqdm(self.matrix_index, "  COMPUTING COLORATION")):
             m_i = list(set(m_i))
-
+            
             if len(m_i) == 1:
                 order_color += [-1]
                 unorder_color += [-1]
@@ -259,7 +262,8 @@ class Scope:
         net_plot.update_traces(
             marker_showscale=False,
             line_color="#DDD",
-            line_width=1
+            line_width=1,
+            marker_line=dict(color="#444", width=1)
         )
 
         # Modify the general layout.
@@ -430,7 +434,7 @@ def get_domain(path: str, code: int) -> "tuple":
         last_power = power
         code -= 2 ** power
         cluster += "1"
-
+    
     domain_list: "list[str]" = []
     context_dict: "dict[str : list]" = {}
     in_domain: bool = False
@@ -460,6 +464,9 @@ def get_domain(path: str, code: int) -> "tuple":
                 continue
 
             hc: str = line.strip().split()[-1]
+
+            if len(hc) <= 2:
+                continue
             context += [hc]
 
             # Cluster line: if we found the exact same cluster, add it to our
@@ -469,6 +476,9 @@ def get_domain(path: str, code: int) -> "tuple":
 
             in_domain |= True
             domain_list += [domain]
+
+    domain_list = list(set(domain_list))
+    domain_list.sort()
 
     length: int = 0
 
@@ -533,6 +543,7 @@ def get_domain(path: str, code: int) -> "tuple":
                     else:
                         domain_dict[d_cont[pos_b]] += [i_b]
 
+
                     Context: object = PairewiseContextAnalyzer(a, b)
                     Context.compute_distance()
 
@@ -546,7 +557,7 @@ def get_domain(path: str, code: int) -> "tuple":
 
     # Return a list of unique elements, as far as a same Peitsch code can be
     # multiple time in the same domain.
-    return list(set(domain_list)), [order_matrix, unorder_matrix, domain_dict]
+    return domain_list, [order_matrix, unorder_matrix, domain_dict]
 
 
 if __name__ == "__main__":
@@ -565,7 +576,7 @@ if __name__ == "__main__":
             index_dict=data_list[2]
         )
 
-        for i, domain in enumerate(tqdm(domain_list, "   PARSING DOMAIN LIST")):
+        for domain in tqdm(domain_list, "   PARSING DOMAIN LIST"):
             scope_tree.add_domain(domain)
 
         plot: go.FigureWidget = scope_tree.plot_network(
@@ -596,7 +607,7 @@ if __name__ == "__main__":
         plot.write_html(
             f"/home/lrouaud/Téléchargements/{code}_network.html",
             full_html=False,
-            include_plotlyjs="cdn"
-            # include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
-            #                   "plotly.min.js")
+            # include_plotlyjs="cdn"
+            include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
+                              "plotly.min.js")
         )
