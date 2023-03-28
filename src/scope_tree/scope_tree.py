@@ -20,18 +20,15 @@ from matplotlib import colormaps
 import plotly.graph_objects as go
 # [S]
 from statistics import median
+from sys import path
 # [T]
 from tqdm import tqdm
-
-# [M]
-from matplotlib import colormaps
-
-from sys import path
 
 # Checking parent directory.
 path.append("src/embeddings/")
 
 from context_analyzer import PairewiseContextAnalyzer, center_context
+
 
 class Scope:
     """An object to manipulate SCOPe classification.
@@ -190,9 +187,10 @@ class Scope:
         unorder_color: "list[int]" = []
         order_color: "list[int]" = []
 
-        for i, m_i in enumerate(tqdm(self.matrix_index, "  COMPUTING COLORATION")):
+        for i, m_i in enumerate(tqdm(self.matrix_index,
+                                     "  COMPUTING COLORATION")):
             m_i = list(set(m_i))
-            
+
             if len(m_i) == 1:
                 order_color += [-1]
                 unorder_color += [-1]
@@ -230,6 +228,13 @@ class Scope:
                                       v_unorder)))
         v_unorder[unorder_color == -1] = "rgba(150, 150, 150, 0.5)"
         v_unorder = list(v_unorder)
+        
+        border_color: np.ndarray = np.array(
+            ["rgba(68, 68, 68, 1)"] * len(v_unorder),
+            dtype=str
+        )
+        border_color[unorder_color == -1] = "rgba(0, 0, 0, 0)"
+        border_color = list(border_color)
 
         max_size -= min_size
 
@@ -263,7 +268,7 @@ class Scope:
             marker_showscale=False,
             line_color="#DDD",
             line_width=1,
-            marker_line=dict(color="#444", width=1)
+            marker_line=dict(color=border_color, width=1)
         )
 
         # Modify the general layout.
@@ -392,6 +397,27 @@ class Scope:
             line=dict(color="rgba(0, 0, 0, 1)", width=1)
         )
 
+        for i, label in enumerate(net_plot["data"][1]["hovertext"]):
+            node_name: str = label.split("<br>")[-2]
+
+            if node_name[-1] == "0":
+                continue
+            if len(node_name) != 7:
+                continue
+            else:
+                net_plot.add_annotation(
+                    xanchor="center",
+                    yanchor="middle",
+                    x=net_plot["data"][1]["x"][i],
+                    y=net_plot["data"][1]["y"][i],
+                    text=f"<b> {node_name[-1]} </b>",
+                    showarrow=False,
+                    font_color="black",
+                    align="center",
+                    font=dict(size=14),
+                    bgcolor="rgba(255, 255, 255, 0.6)"
+                )
+
         return net_plot
 
 
@@ -434,7 +460,7 @@ def get_domain(path: str, code: int) -> "tuple":
         last_power = power
         code -= 2 ** power
         cluster += "1"
-    
+
     domain_list: "list[str]" = []
     context_dict: "dict[str : list]" = {}
     in_domain: bool = False
@@ -543,13 +569,12 @@ def get_domain(path: str, code: int) -> "tuple":
                     else:
                         domain_dict[d_cont[pos_b]] += [i_b]
 
-
                     Context: object = PairewiseContextAnalyzer(a, b)
                     Context.compute_distance()
 
                     order = Context.distance[0]
                     unorder = Context.distance[1]
-                    
+
                     order_matrix[i_a][i_b] = order
                     order_matrix[i_b][i_a] = order
                     unorder_matrix[i_a][i_b] = unorder
@@ -563,11 +588,53 @@ def get_domain(path: str, code: int) -> "tuple":
 if __name__ == "__main__":
     PEITSCH_CODE: int = [147, 201, 921]
 
-    for code in PEITSCH_CODE:
+    plot_distribution: object = go.Figure()
+
+    cmap = colormaps["viridis"]
+
+    color: object = cmap(np.linspace(0, 1, 4))
+    fill: object = np.array(color)
+    fill[:, -1] = 0.75
+
+    for i, code in enumerate(PEITSCH_CODE):
         domain_list, data_list = get_domain(
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
+
+        plot_distribution.add_trace(go.Violin(
+            x=data_list[0][np.triu_indices(data_list[0].shape[0], k=1)],
+            y0="O(NP)<br />algorithm",
+            name=f"{code}",
+            legendgroup="ONP",
+            scalegroup="ONP",
+            legendgrouptitle_text="<b><em>O(NP)<br />algorithm<em></b>",
+            box_visible=True,
+            meanline_visible=True,
+            line_width=1,
+            line_color="#444",
+            marker_color=f"rgba{tuple(color[i])}",
+            marker_line_color="#444",
+            marker_line_width=1,
+            fillcolor=f"rgba{tuple(fill[i])}",
+        ))
+
+        plot_distribution.add_trace(go.Violin(
+            x=data_list[1][np.triu_indices(data_list[1].shape[0], k=1)],
+            y0="Bray-Curtis<br />distance",
+            name=f"{code}",
+            legendgroup="BC_dist",
+            scalegroup="BC_dist",
+            legendgrouptitle_text="<b><em>Bray-Curtis<br />distance</em></b>",
+            box_visible=True,
+            meanline_visible=True,
+            line_width=1,
+            line_color="#444",
+            marker_color=f"rgba{tuple(color[i])}",
+            marker_line_color="#444",
+            marker_line_width=1,
+            fillcolor=f"rgba{tuple(fill[i])}",
+        ))
 
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
@@ -583,27 +650,6 @@ if __name__ == "__main__":
             peitsch_code=code
         )
 
-        for i, label in enumerate(plot["data"][1]["hovertext"]):
-            node_name: str = label.split("<br>")[-2]
-
-            if node_name[-1] == "0":
-                continue
-            if len(node_name) != 7:
-                continue
-            else:
-                plot.add_annotation(
-                    xanchor="center",
-                    yanchor="middle",
-                    x=plot["data"][1]["x"][i],
-                    y=plot["data"][1]["y"][i],
-                    text=f"<b> {node_name[-1]} </b>",
-                    showarrow=False,
-                    font_color="black",
-                    align="center",
-                    font=dict(size=14),
-                    bgcolor="rgba(255, 255, 255, 0.6)"
-                )
-
         plot.write_html(
             f"/home/lrouaud/Téléchargements/{code}_network.html",
             full_html=False,
@@ -611,3 +657,46 @@ if __name__ == "__main__":
             include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
                               "plotly.min.js")
         )
+
+    # Add the rectangle border.
+    plot_distribution.add_shape(
+        type="rect",
+        xref="paper",
+        yref="paper",
+        x0=0,
+        y0=0,
+        x1=1,
+        y1=1,
+        line=dict(width=1, color="black")
+    )
+
+    plot_distribution.update_traces()
+
+    # Modify general plot properties.
+    plot_distribution.update_layout(
+        plot_bgcolor="white",
+        legend_title="<b>Data distribution</b>",
+        margin=dict(l=30, r=30, t=30, b=30),
+        font=dict(size=14),
+        xaxis_title="<b>Bray-Curtis distance</b>",
+        yaxis_title="<b>Peitsch code</b>",
+        yaxis_tickangle=270,
+        violinmode="group"
+    )
+
+    # Modify axis properties.
+    plot_distribution.update_xaxes(showline=True, linewidth=1)
+    plot_distribution.update_yaxes(showline=True, linewidth=1)
+
+    plot_distribution["data"][0]["showlegend"] = True
+
+    # Show the plot.
+    # plot_distribution.show()
+
+    plot_distribution.write_html(
+        f"/home/lrouaud/Téléchargements/context_distribution.html",
+        full_html=False,
+        # include_plotlyjs="cdn"
+        include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
+                          "plotly.min.js")
+    )
