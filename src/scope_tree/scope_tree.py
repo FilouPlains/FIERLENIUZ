@@ -228,7 +228,7 @@ class Scope:
                                       v_unorder)))
         v_unorder[unorder_color == -1] = "rgba(150, 150, 150, 0.5)"
         v_unorder = list(v_unorder)
-        
+
         border_color: np.ndarray = np.array(
             ["rgba(68, 68, 68, 1)"] * len(v_unorder),
             dtype=str
@@ -586,15 +586,15 @@ def get_domain(path: str, code: int) -> "tuple":
 
 
 if __name__ == "__main__":
-    PEITSCH_CODE: int = [147, 201, 921]
+    PEITSCH_CODE: int = [105, 147, 201, 923]
 
     plot_distribution: object = go.Figure()
 
     cmap = colormaps["viridis"]
 
-    color: object = cmap(np.linspace(0, 1, 4))
+    color: object = cmap(np.linspace(0, 1, len(PEITSCH_CODE)))
     fill: object = np.array(color)
-    fill[:, -1] = 0.75
+    fill[:, -1] = 0.35
 
     for i, code in enumerate(PEITSCH_CODE):
         domain_list, data_list = get_domain(
@@ -602,39 +602,8 @@ if __name__ == "__main__":
             code
         )
 
-        plot_distribution.add_trace(go.Violin(
-            x=data_list[0][np.triu_indices(data_list[0].shape[0], k=1)],
-            y0="O(NP)<br />algorithm",
-            name=f"{code}",
-            legendgroup="ONP",
-            scalegroup="ONP",
-            legendgrouptitle_text="<b><em>O(NP)<br />algorithm<em></b>",
-            box_visible=True,
-            meanline_visible=True,
-            line_width=1,
-            line_color="#444",
-            marker_color=f"rgba{tuple(color[i])}",
-            marker_line_color="#444",
-            marker_line_width=1,
-            fillcolor=f"rgba{tuple(fill[i])}",
-        ))
-
-        plot_distribution.add_trace(go.Violin(
-            x=data_list[1][np.triu_indices(data_list[1].shape[0], k=1)],
-            y0="Bray-Curtis<br />distance",
-            name=f"{code}",
-            legendgroup="BC_dist",
-            scalegroup="BC_dist",
-            legendgrouptitle_text="<b><em>Bray-Curtis<br />distance</em></b>",
-            box_visible=True,
-            meanline_visible=True,
-            line_width=1,
-            line_color="#444",
-            marker_color=f"rgba{tuple(color[i])}",
-            marker_line_color="#444",
-            marker_line_width=1,
-            fillcolor=f"rgba{tuple(fill[i])}",
-        ))
+        x: np.ndarray = data_list[1][np.triu_indices(data_list[1].shape[0],
+                                                     k=1)]
 
         scope_tree: Scope = Scope(
             "data/SCOPe_2.08_classification.txt",
@@ -645,6 +614,95 @@ if __name__ == "__main__":
 
         for domain in tqdm(domain_list, "   PARSING DOMAIN LIST"):
             scope_tree.add_domain(domain)
+
+        for j, key in enumerate(["0", "a", "b", "c", "d"]):
+            if key == "0":
+                name_label: str = f"<b>{code} (all)"
+                show_legend: bool = True
+            else:
+                name_label: str = f"{code} ({key})"
+                show_legend: bool = False
+
+            m_i: set = list(
+                set(scope_tree.matrix_index[scope_tree.index[key]]))
+            matrix: np.ndarray = data_list[0][m_i, :][:, m_i]
+            x: np.ndarray = matrix[np.triu_indices(matrix.shape[0],
+                                                   k=1)]
+
+            plot_distribution.add_trace(go.Violin(
+                y=x,
+                x0=f"{name_label} [O(NP)]</b>",
+                name=code,
+                legendgroup="ONP",
+                legendgrouptitle_text="<b><em>O(NP)<br />algorithm<em></b>",
+                visible="legendonly",
+                showlegend=show_legend,
+                line_width=1,
+                line_color="#444",
+                marker_color=f"rgba{tuple(color[i])}",
+                marker_line_color="#444",
+                marker_line_width=1,
+                fillcolor=f"rgba{tuple(fill[i])}",
+                span=[x.min(), x.max()],
+                points=False
+            ))
+
+            plot_distribution.add_trace(go.Box(
+                y=x,
+                x0=f"{name_label} [O(NP)]</b>",
+                name=code,
+                legendgroup="ONP",
+                legendgrouptitle_text="<b><em>O(NP)<br />algorithm<em></b>",
+                visible="legendonly",
+                showlegend=False,
+                line_width=1.5,
+                line_color="#444",
+                marker_color=f"rgba{tuple(color[i])}",
+                marker_line_color="#444",
+                marker_line_width=1,
+                fillcolor=f"rgba{tuple(fill[i])}",
+                boxmean="sd",
+                jitter=0.5
+            ))
+
+            matrix: np.ndarray = data_list[1][m_i, :][:, m_i]
+            x: np.ndarray = matrix[np.triu_indices(matrix.shape[0], k=1)]
+
+            plot_distribution.add_trace(go.Violin(
+                y=x,
+                x0=f"{name_label} [BC]",
+                name=code,
+                legendgroup="BC_dist",
+                legendgrouptitle_text=("<b><em>Bray-Curtis<br />"
+                                       "distance</em></b>"),
+                showlegend=show_legend,
+                line_width=1,
+                line_color="#444",
+                marker_color=f"rgba{tuple(color[i])}",
+                marker_line_color="#444",
+                marker_line_width=1,
+                fillcolor=f"rgba{tuple(fill[i])}",
+                span=[x.min(), x.max()],
+                points=False
+            ))
+
+            plot_distribution.add_trace(go.Box(
+                y=x,
+                x0=f"{name_label} [BC]",
+                name=code,
+                legendgroup="BC_dist",
+                legendgrouptitle_text=("<b><em>Bray-Curtis<br />"
+                                       "distance</em></b>"),
+                showlegend=False,
+                line_width=1.5,
+                line_color="#444",
+                marker_color=f"rgba{tuple(color[i])}",
+                marker_line_color="#444",
+                marker_line_width=1,
+                fillcolor=f"rgba{tuple(fill[i])}",
+                boxmean="sd",
+                jitter=0.5
+            ))
 
         plot: go.FigureWidget = scope_tree.plot_network(
             peitsch_code=code
@@ -678,10 +736,14 @@ if __name__ == "__main__":
         legend_title="<b>Data distribution</b>",
         margin=dict(l=30, r=30, t=30, b=30),
         font=dict(size=14),
-        xaxis_title="<b>Bray-Curtis distance</b>",
-        yaxis_title="<b>Peitsch code</b>",
+        xaxis_title="<b>Peitsch code</b>",
+        yaxis_title="<b>Distance</b>",
         yaxis_tickangle=270,
-        violinmode="group"
+        yaxis_tickformat=",.2f",
+        boxgroupgap=0.1,
+        boxgap=0.1,
+        violingroupgap=0.1,
+        violingap=0.1
     )
 
     # Modify axis properties.
@@ -694,7 +756,7 @@ if __name__ == "__main__":
     # plot_distribution.show()
 
     plot_distribution.write_html(
-        f"/home/lrouaud/Téléchargements/context_distribution.html",
+        f"/home/lrouaud/Téléchargements/soft_context_distribution.html",
         full_html=False,
         # include_plotlyjs="cdn"
         include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
