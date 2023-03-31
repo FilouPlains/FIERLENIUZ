@@ -117,7 +117,7 @@ class Scope:
             The domain to add.
         """
         # To check if the domain is in the classification dictionary.
-        if domain not in self.classification:
+        if domain not in self.classification or domain not in self.index_dict:
             print(f"[Warn##] Domain [{domain}] is not in the SCOPe "
                   "classification dictionary, skipping...")
             return None
@@ -586,7 +586,7 @@ def get_domain(path: str, code: int) -> "tuple":
 
 
 if __name__ == "__main__":
-    PEITSCH_CODE: int = [105, 147, 201, 923]
+    PEITSCH_CODE: int = [105, 147, 201, 921]
 
     plot_distribution: object = go.Figure()
 
