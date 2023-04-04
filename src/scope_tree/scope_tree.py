@@ -3,17 +3,19 @@
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "23s/02/2023"
-__version__ = "1.0.0"
+__date__ = "04/04/2023"
+__version__ = "2.0.0"
 __copyright__ = "CC BY-SA"
 
 
+# [ FULL IMPORT ]
 # [I]
 import igviz
 # [N]
 import networkx as net
 import numpy as np
 
+# [ PARTIAL IMPORT ]
 # [M]
 from matplotlib import colormaps
 # [P]
@@ -24,11 +26,12 @@ from sys import path
 # [T]
 from tqdm import tqdm
 
+# [ EXTERNAL IMPORT ]
 # Checking parent directory.
 path.append("src/embeddings/")
 
+# [C]
 from context_analyzer import PairewiseContextAnalyzer, center_context
-
 
 class Scope:
     """An object to manipulate SCOPe classification.
@@ -278,7 +281,39 @@ class Scope:
                           f"<br />Peitsch code {peitsch_code}</b>"),
             font=dict(size=14),
             margin=dict(l=30, r=30, t=30, b=30),
-            coloraxis_showscale=True
+            coloraxis_showscale=True,
+            updatemenus=[dict(
+                buttons=[
+                    dict(
+                        method="restyle",
+                        label="Bray-Curtis",
+                        args=[
+                            "marker",
+                            dict(color=v_unorder, size=size, opacity=1,
+                                 line=dict(color=border_color, width=1)),
+                            [1]
+                        ]
+                    ),
+                    dict(
+                        method="restyle",
+                        label="O(NP)",
+                        args=[
+                            "marker",
+                            dict(color=v_order, size=size, opacity=1,
+                                 line=dict(color=border_color, width=1)),
+                            [1]
+                        ]
+                    )
+                ],
+                type="dropdown",
+                direction="up",
+                showactive=True,
+                x=1.01,
+                xanchor="left",
+                y=0,
+                yanchor="bottom",
+                font_color="black"
+            )]
         )
 
         # Modify legends' labels.
@@ -353,13 +388,14 @@ class Scope:
                 color="rgba(0, 0, 0, 0)",
                 opacity=0,
                 colorbar=dict(
-                    title="Bray-Curtis<br />distance",
+                    title="Distance (%)",
+                    title_font=dict(size=14),
                     tickvals=ticks,
                     ticktext=ticks,
                     lenmode="pixels",
-                    len=200,
+                    len=150,
                     yanchor="bottom",
-                    y=0,
+                    y=0.09,
                 ),
                 colorscale="inferno_r",
                 cmin=0,
@@ -627,7 +663,7 @@ if __name__ == "__main__":
                 set(scope_tree.matrix_index[scope_tree.index[key]]))
             matrix: np.ndarray = data_list[0][m_i, :][:, m_i]
             x: np.ndarray = matrix[np.triu_indices(matrix.shape[0],
-                                                   k=1)]
+                                   k=1)] * 100
 
             plot_distribution.add_trace(go.Violin(
                 y=x,
@@ -666,7 +702,7 @@ if __name__ == "__main__":
             ))
 
             matrix: np.ndarray = data_list[1][m_i, :][:, m_i]
-            x: np.ndarray = matrix[np.triu_indices(matrix.shape[0], k=1)]
+            x: np.ndarray = matrix[np.triu_indices(matrix.shape[0], k=1)] * 100
 
             plot_distribution.add_trace(go.Violin(
                 y=x,
@@ -711,7 +747,6 @@ if __name__ == "__main__":
         plot.write_html(
             f"/home/lrouaud/Téléchargements/{code}_network.html",
             full_html=False,
-            # include_plotlyjs="cdn"
             include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
                               "plotly.min.js")
         )
@@ -737,9 +772,8 @@ if __name__ == "__main__":
         margin=dict(l=30, r=30, t=30, b=30),
         font=dict(size=14),
         xaxis_title="<b>Peitsch code</b>",
-        yaxis_title="<b>Distance</b>",
-        yaxis_tickangle=270,
-        yaxis_tickformat=",.2f",
+        yaxis_title="<b>Distance (%)</b>",
+        yaxis_tickformat=",.0f",
         boxgroupgap=0.1,
         boxgap=0.1,
         violingroupgap=0.1,
@@ -753,12 +787,11 @@ if __name__ == "__main__":
     plot_distribution["data"][0]["showlegend"] = True
 
     # Show the plot.
-    # plot_distribution.show()
+    plot_distribution.show()
 
     plot_distribution.write_html(
         f"/home/lrouaud/Téléchargements/soft_context_distribution.html",
         full_html=False,
-        # include_plotlyjs="cdn"
         include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
                           "plotly.min.js")
     )
