@@ -50,12 +50,22 @@ class Scope:
         ----------
         path : `str`
             A path to a SCOPe classification data file.
-        """
+        order_matrix : `np.ndarray`
+            Matrix containing the computed context pairwise using O(NP)
+            algorithm.
+        unorder_matrix : `np.ndarray`
+            Matrix containing the computed context pairwise using Bray-Curtis
+            distance.
+        index_dict : `dict[str : int]`
+            Index liking domain (as keys) to index in the matrix (as int).
+        """        
         # To go from domain to SCOPe classification code.
         self.classification: "dict[str: str]" = {}
 
-        # Create the network.
+        # Create the network. A node = A SCOPe class code. A edge = Link between
+        # to class.
         self.tree: net.Graph = net.Graph()
+        # Initialize the network with the node "0".
         self.tree.add_node("0")
 
         # To use viridis colour.
@@ -65,17 +75,23 @@ class Scope:
 
         # To obtain the number of leaves in a given nodes.
         self.size: "list[int]" = [-1]
+        # To link SCOPe code classification (as key) to their index in other
+        # list.
         self.index: "dict[str : int]" = {"0": 0}
+        # To obtain the number of total leaves in each node for the SCOPe
+        # classificiation.
         self.absolute_size: "dict[str : int]" = {"0": 0}
+        # To order the absolute size in function of our node.
         self.order_abs_size: "list[int]" = []
-
-        # Labels.
+        # Labels to display on the network plot.
         self.label: "list[str]" = []
 
+        # Set up attributes with given parameters.
         self.order_matrix: np.ndarray = order_matrix
         self.unorder_matrix: np.ndarray = unorder_matrix
         self.index_dict: "dict[str : int]" = index_dict
 
+        # To get the index list ordered in function of which domain we compare.
         self.matrix_index: "list[list[int]]" = [[]]
 
         # Parse a given SCOPe classification data file.
@@ -87,6 +103,7 @@ class Scope:
 
                 split_line: "list[str]" = line.split()
 
+                # Set up a new size.
                 if len(split_line[2]) <= 5:
                     if split_line[2] not in self.absolute_size:
                         self.absolute_size[split_line[2]] = 0
@@ -95,12 +112,16 @@ class Scope:
                 if split_line[3] == "-":
                     continue
 
+                # Every time, adding one to the original node.
                 self.absolute_size["0"] += 1
                 split_class: "list[str]" = split_line[2].split(".")
 
+                # Parse all sub SCOPe class. So for `a.1.1.1`, we parse `a`,
+                # `a.1.1` and `a.1.1.1`.
                 for i in range(4):
                     normal_class: str = ".".join(split_class[:i + 1])
 
+                    # Set up a new size.
                     if normal_class not in self.absolute_size:
                         self.absolute_size[normal_class] = 1
                     else:
@@ -109,6 +130,7 @@ class Scope:
                 # Adding a domain to the classification dictionary.
                 self.classification[split_line[3]] = split_line[2]
 
+        # Adding 0 for the ordered absolute_size.
         self.order_abs_size += [self.absolute_size["0"]]
 
     def add_domain(self, domain: str) -> None:
@@ -127,6 +149,7 @@ class Scope:
 
         # Transform `a.1.1.1` in a list like `["a", "1", "1", "1"]`
         class_code: "str" = self.classification[domain].split(".")
+        # Adding parameters to the original nodes.
         last: str = "0"
         self.size[0] += 1
         self.matrix_index[0] += list(self.index_dict[domain])
@@ -140,19 +163,26 @@ class Scope:
             # Is this a new node to add ?
             if node not in self.index:
 
+                # Adding the size of a given node.
                 self.order_abs_size += [self.absolute_size[node]]
 
+                # So, when we plot label, we only display first SCOPe class
+                # level (a, b...).
                 if len(node) <= 1:
                     self.label += [node]
                 else:
                     self.label += [""]
 
+                # Increasing the total size for a given node.
                 self.size += [1]
+                # Setting index to extract context values from matrix.
                 self.matrix_index += [list(self.index_dict[domain])]
+                # Adding a index to set data of previous set-up list.
                 self.index[node] = len(self.size) - 1
             else:
                 # Increase node's size.
                 self.size[self.index[node]] += 1
+                # Adding index to extract context values from matrix.
                 self.matrix_index[self.index[node]] += list(
                     self.index_dict[domain]
                 )
@@ -162,6 +192,11 @@ class Scope:
                 self.color += [f"rgba{tuple(self.viridis[i + 1])}"]
                 self.tree.add_edge(last, node)
 
+            # So each time, we change the edge pairing like so:
+            # - `[0, a]`
+            # - `[a, a.1]`
+            # - `[a.1, a.1.1]`
+            # - `[a.1.1, a.1.1.1]`
             last = node
 
     def plot_network(
@@ -175,72 +210,113 @@ class Scope:
 
         Parameters
         ----------
-        peitsch_code : int | str
+        peitsch_code : `int | str`
             The peitsch code used to do the network.
-        min_size : int, optional
+        min_size : `int`, optional
             The minimal size of a plotted node, by default 10.
-        max_size : int, optional
+        max_size : `int`, optional
             The maximal size of a plotted node, by default 50.
+        to_percent : `bool`, optional
+            If the node size is linked to the total number of leaves or if we
+            compute a percentage:
+        
+        ```
+                          number of leaves in a given nodes
+        percentage = 1 - ——————————————————————————————————— x 100
+                            total leaves in a given nodes
+        ```
 
         Returns
         -------
-        object
+        `object`
             A plotly plot.
         """
+        # To set list of colors.
         unorder_color: "list[int]" = []
         order_color: "list[int]" = []
 
+        # Parsing (yet again) all nodes. More precisely, matrix index for a
+        # given node.
         for i, m_i in enumerate(tqdm(self.matrix_index,
                                      "  COMPUTING COLORATION")):
+            # Create a list of unique elements.
             m_i = list(set(m_i))
 
+            # No comparison to do (only one domaine in the nodes). We set up the
+            # future colours to -1. (And yes, I used both color and colour).
             if len(m_i) == 1:
                 order_color += [-1]
                 unorder_color += [-1]
             else:
+                # Get all context value in the matrix and sum them.
                 mat_sum: np.ndarray = np.sum(self.order_matrix[m_i, :][:, m_i])
+                # Get the size of the sub-matrix.
                 length: int = self.order_matrix[m_i, :][:, m_i].shape[0]
+                # To mean value, we take the whole matrix size less the
+                # diagonal size which is, here, `length`.
                 to_mean: int = length ** 2 - length
 
+                # Mean for ordered context.
                 order_color += [mat_sum / to_mean]
 
+                # Get all context value in the matrix and sum them.
                 mat_sum: np.ndarray = np.sum(
                     self.unorder_matrix[m_i, :][:, m_i]
                 )
+                # Get the size of the sub-matrix.
                 length: int = self.order_matrix[m_i, :][:, m_i].shape[0]
+                # To mean value, we take the whole matrix size less the
+                # diagonal size which is, here, `length`.
                 to_mean: int = length ** 2 - length
 
+                # Mean for unordered context.
                 unorder_color += [mat_sum / to_mean]
 
+        # Change all `-1` to gray AND put to these one no border. Do it for
+        # both order and unorder computed values.
         order_color = np.array(order_color)
 
+        # Define the colour palette.
         cmap: object = colormaps["inferno_r"]
         v_order: np.ndarray = cmap(order_color)
+        # Transform [0, 1] colour values to [0, 255].
         v_order *= np.array([255, 255, 255, 1])
-        v_order = np.array(
-            list(map(lambda line: f"rgba{tuple(line)}", v_order)))
+        # Transform values to rgba format.
+        v_order = np.array(list(map(lambda line: f"rgba{tuple(line)}",
+                                    v_order)))
+        # Change `-1` values to gray.
         v_order[order_color == -1] = "rgba(150, 150, 150, 0.5)"
+        # Save the values as a list.
         v_order = list(v_order)
 
         unorder_color = np.array(unorder_color)
 
+        # Define the colour palette.
         cmap: object = colormaps["inferno_r"]
         v_unorder: np.ndarray = cmap(unorder_color)
+        # Transform [0, 1] colour values to [0, 255].
         v_unorder *= np.array([255, 255, 255, 1])
+        # Transform values to rgba format.
         v_unorder = np.array(list(map(lambda line: f"rgba{tuple(line)}",
                                       v_unorder)))
+        # Change `-1` values to gray.
         v_unorder[unorder_color == -1] = "rgba(150, 150, 150, 0.5)"
+        # Save the values as a list.
         v_unorder = list(v_unorder)
 
+        # Set up gray border to all nodes (so we see them better).
         border_color: np.ndarray = np.array(
             ["rgba(68, 68, 68, 1)"] * len(v_unorder),
             dtype=str
         )
+        # Change nodes' border with a context value of `-1` with no fully
+        # transparent (in other words, `None`).
         border_color[unorder_color == -1] = "rgba(0, 0, 0, 0)"
         border_color = list(border_color)
 
         max_size -= min_size
 
+        # Set up the size to percentage.
         if to_percent:
             # Percentage of the leaves size values.
             size: "list[float]" = list(np.array(self.size) /
@@ -282,6 +358,7 @@ class Scope:
             font=dict(size=14),
             margin=dict(l=30, r=30, t=30, b=30),
             coloraxis_showscale=True,
+            # Add the menu to change between order and unorder context values.
             updatemenus=[dict(
                 buttons=[
                     dict(
@@ -320,7 +397,7 @@ class Scope:
         net_plot["data"][0]["name"] = "Edges"
         net_plot["data"][1]["name"] = "Nodes"
 
-        # Add the size in the hover text.
+        # Add data in the hover text.
         order_hover: np.ndarray = np.array(order_color) * 100
         unorder_hover: np.ndarray = np.array(unorder_color) * 100
         percent_hover: np.ndarray = (np.array(size) - 10) / 4 * 10
@@ -328,21 +405,26 @@ class Scope:
         new_hover: "list[str]" = []
 
         for i, shift in enumerate(tqdm(self.size, "       MODIFYING HOVER")):
+            # To take in consideration if a order context have been computed.
             if order_hover[i] < 0:
                 order: str = f"Order context: None<br>"
             else:
                 order: str = f"Order context: {order_hover[i]:.1f}<br>"
 
+            # To take in consideration if a unorder context have been computed.
             if unorder_hover[i] < 0:
                 unorder: str = f"Unorder context: None<br>"
             else:
                 unorder: str = f"Unorder context: {unorder_hover[i]:.1f}<br>"
 
+            # Add all text data.
             new_hover += [f"Leaf number: {shift}<br>"
                           f"{unorder}{order}"
                           f"Relative size: {percent_hover[i]:.1f} %<br>"
+                          # Append old hovertext at the end.
                           f"{net_plot['data'][1]['hovertext'][i]}"]
 
+        # Change hover information.
         net_plot["data"][1]["hovertext"] = new_hover
 
         # To set x and y lim of the circle legends.
@@ -374,12 +456,14 @@ class Scope:
             name="Context not computed"
         )
 
+        # To set up ticks in the colorbar.
         ticks: "list[int]" = list(np.linspace(
             0,
             100,
             5
         ).astype(int))
 
+        # Add a dummy plot to add a colorbar.
         colorbar_plot: go.Scatter = go.Scatter(
             mode="markers",
             x=[None],
@@ -404,6 +488,7 @@ class Scope:
             name=""
         )
 
+        # Append all dummy plot for the legend to the main plot.
         net_plot.add_trace(side_plot)
         net_plot.add_trace(legend_plot)
         net_plot.add_trace(colorbar_plot)
@@ -421,6 +506,7 @@ class Scope:
                 align="center"
             )
 
+        # Add a black border to the plot.
         net_plot.add_shape(
             type="rect",
             xref="paper",
@@ -433,6 +519,7 @@ class Scope:
             line=dict(color="rgba(0, 0, 0, 1)", width=1)
         )
 
+        # Add label like `a`, `b`... Hover their respective nodes.
         for i, label in enumerate(net_plot["data"][1]["hovertext"]):
             node_name: str = label.split("<br>")[-2]
 
@@ -479,8 +566,8 @@ def get_domain(path: str, code: int) -> "tuple":
     while code > 0:
         power = 0
 
-        # When 2 ** power is greater than the code, power - 1 is the index where
-        # we can put a 1 into the hydrophobic cluster list/text.
+        # When 2 ** power is greater than the code, power - 1 is the index
+        # where we can put a 1 into the hydrophobic cluster list/text.
         while 2 ** power < code:
             power += 1
 
