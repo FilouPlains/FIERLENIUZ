@@ -8,12 +8,24 @@ __version__ = "2.0.0"
 __copyright__ = "CC BY-SA"
 
 
+# ==================================================
+
+# To skip all warnings link to numpy module version.
+
+# [W]
+from warnings import simplefilter
+simplefilter("ignore", DeprecationWarning)
+
+# ==================================================
+
+
 # [ FULL IMPORT ]
 # [I]
 import igviz
 # [N]
 import networkx as net
 import numpy as np
+
 
 # [ PARTIAL IMPORT ]
 # [M]
@@ -26,6 +38,7 @@ from sys import path
 # [T]
 from tqdm import tqdm
 
+
 # [ EXTERNAL IMPORT ]
 # Checking parent directory.
 path.append("src/embeddings/")
@@ -33,7 +46,8 @@ path.append("src/embeddings/")
 # [C]
 from context_analyzer import PairewiseContextAnalyzer, center_context
 
-class Scope:
+
+class ScopeTree:
     """An object to manipulate SCOPe classification.
     """
 
@@ -58,7 +72,7 @@ class Scope:
             distance.
         index_dict : `dict[str : int]`
             Index liking domain (as keys) to index in the matrix (as int).
-        """        
+        """
         # To go from domain to SCOPe classification code.
         self.classification: "dict[str: str]" = {}
 
@@ -133,19 +147,24 @@ class Scope:
         # Adding 0 for the ordered absolute_size.
         self.order_abs_size += [self.absolute_size["0"]]
 
-    def add_domain(self, domain: str) -> None:
+    def __iadd__(self, domain: str) -> object:
         """Add a domain to the network graph.
 
         Parameters
         ----------
         domain : `str`
             The domain to add.
+
+        Returns
+        -------
+        object
+            self.
         """
         # To check if the domain is in the classification dictionary.
         if domain not in self.classification or domain not in self.index_dict:
             print(f"[Warn##] Domain [{domain}] is not in the SCOPe "
                   "classification dictionary, skipping...")
-            return None
+            return self
 
         # Transform `a.1.1.1` in a list like `["a", "1", "1", "1"]`
         class_code: "str" = self.classification[domain].split(".")
@@ -199,6 +218,8 @@ class Scope:
             # - `[a.1.1, a.1.1.1]`
             last = node
 
+        return self
+
     def plot_network(
         self,
         peitsch_code: "int | str",
@@ -219,7 +240,7 @@ class Scope:
         to_percent : `bool`, optional
             If the node size is linked to the total number of leaves or if we
             compute a percentage:
-        
+
         ```
                           number of leaves in a given nodes
         percentage = 1 - ——————————————————————————————————— x 100
@@ -549,14 +570,14 @@ def get_domain(path: str, code: int) -> "tuple":
 
     Parameters
     ----------
-    path : str
+    path : `str`
         Path to pyHCA output file.
-    code : int
+    code : `int`
         The Peitsch code.
 
     Returns
     -------
-    list[str]
+    `list[str]`
         The list of extracted domains.
     """
     last_power = 0
@@ -599,6 +620,7 @@ def get_domain(path: str, code: int) -> "tuple":
             # Domaine line.
             if line[0] == ">":
                 if in_domain:
+                    # Add the centered context to the dictionary.
                     context_dict[domain] = list(center_context(
                         context=np.array([context]),
                         window=10,
@@ -614,6 +636,7 @@ def get_domain(path: str, code: int) -> "tuple":
 
             hc: str = line.strip().split()[-1]
 
+            # Skip to small clusters.
             if len(hc) <= 2:
                 continue
             context += [hc]
@@ -631,11 +654,14 @@ def get_domain(path: str, code: int) -> "tuple":
 
     length: int = 0
 
+    # To get the full length of the number of context per domain, because we
+    # have a list of list.
     for content in context_dict.values():
         length += len(content)
 
     keys: "list[str]" = list(context_dict.keys())
 
+    # Set up the futur context matrix.
     order_matrix: np.ndarray = np.zeros((length, length), dtype=float)
     unorder_matrix: np.ndarray = np.zeros((length, length), dtype=float)
 
@@ -644,30 +670,39 @@ def get_domain(path: str, code: int) -> "tuple":
 
     index: int = 0
 
+    # Loop in the half matrix.
     for shift_i, i in enumerate(tqdm(keys[:-1], "    MATRIX COMPUTATION")):
         for j in keys[shift_i + 1:]:
             order: "list[float]" = []
             unorder: "list[float]" = []
 
+            # The whole context (domain 1 vs domain 2).
             context: "list[str]" = context_dict[i] + context_dict[j]
-
+            # Domains names linked to `context` (number and order).
             d_cont: "list[str]" = [i] * len(context_dict[i]) \
                 + [j] * len(context_dict[j])
+            # ID for the domain linked to `context` (number and order).
             n_cont: "list[int]" = list(range(len(context_dict[i]))) \
                 + list(range(len(context_dict[j])))
 
+            # Loop in the half matrix of the context in the domain. We do like
+            # so as far as we can have multiple context in a domain.
             for pos_a, a in enumerate(context[:-1]):
                 if len(a) <= 0:
                     continue
 
+                # Generate a unique key which take in consideration the domain
+                # and the multiple context per domain.
                 dict_key_a: str = f"{d_cont[pos_a]}_{n_cont[pos_a]}"
 
+                # Add the key to the dictionary.
                 if dict_key_a not in index_dict:
                     index_dict[dict_key_a] = index
                     index += 1
 
                 i_a: int = index_dict[dict_key_a]
 
+                # Add matrix index.
                 if d_cont[pos_a] not in domain_dict:
                     domain_dict[d_cont[pos_a]] = [i_a]
                 else:
@@ -679,19 +714,24 @@ def get_domain(path: str, code: int) -> "tuple":
 
                     pos_b += 1 + pos_a
 
+                    # Generate a unique key which take in consideration the
+                    # domain and the multiple context per domain.
                     dict_key_b: str = f"{d_cont[pos_b]}_{n_cont[pos_b]}"
 
+                    # Add the key to the dictionary.
                     if dict_key_b not in index_dict:
                         index_dict[dict_key_b] = index
                         index += 1
 
                     i_b: int = index_dict[dict_key_b]
 
+                    # Add matrix index.
                     if d_cont[pos_b] not in domain_dict:
                         domain_dict[d_cont[pos_b]] = [i_b]
                     else:
                         domain_dict[d_cont[pos_b]] += [i_b]
 
+                    # Compute order and unorder context.
                     Context: object = PairewiseContextAnalyzer(a, b)
                     Context.compute_distance()
 
@@ -709,36 +749,43 @@ def get_domain(path: str, code: int) -> "tuple":
 
 
 if __name__ == "__main__":
+    # List of Peitsch code to used to plot the network plot and distribution.
     PEITSCH_CODE: int = [105, 147, 201, 921]
 
+    # To initialize the plot distribution (box + violin).
     plot_distribution: object = go.Figure()
 
     cmap = colormaps["viridis"]
 
+    # Fill the plot with transparent colours.
     color: object = cmap(np.linspace(0, 1, len(PEITSCH_CODE)))
     fill: object = np.array(color)
     fill[:, -1] = 0.35
 
+    # Parse all Peitsch code.
     for i, code in enumerate(PEITSCH_CODE):
+        # Get all data and context values in matrix format.
         domain_list, data_list = get_domain(
             "data/pyHCA_SCOPe_30identity_globular.out",
             code
         )
 
-        x: np.ndarray = data_list[1][np.triu_indices(data_list[1].shape[0],
-                                                     k=1)]
-
-        scope_tree: Scope = Scope(
+        # Instantiate a Scope object
+        scope_tree: ScopeTree = ScopeTree(
             "data/SCOPe_2.08_classification.txt",
             order_matrix=data_list[0],
             unorder_matrix=data_list[1],
             index_dict=data_list[2]
         )
 
+        # Add domains to the tree.
         for domain in tqdm(domain_list, "   PARSING DOMAIN LIST"):
-            scope_tree.add_domain(domain)
+            scope_tree += domain
 
+        # Parse all SCOPe class to output distributions in function of them.
+        # "0" refers to the tree's root.
         for j, key in enumerate(["0", "a", "b", "c", "d"]):
+            # Change the label and legend showing if we are at the root or not.
             if key == "0":
                 name_label: str = f"<b>{code} (all)"
                 show_legend: bool = True
@@ -746,12 +793,15 @@ if __name__ == "__main__":
                 name_label: str = f"{code} ({key})"
                 show_legend: bool = False
 
+            # Distribution for the order context.
             m_i: set = list(
                 set(scope_tree.matrix_index[scope_tree.index[key]]))
             matrix: np.ndarray = data_list[0][m_i, :][:, m_i]
             x: np.ndarray = matrix[np.triu_indices(matrix.shape[0],
                                    k=1)] * 100
 
+            # Those next plot are hide by default.
+            # Add a violin plot.
             plot_distribution.add_trace(go.Violin(
                 y=x,
                 x0=f"{name_label} [O(NP)]</b>",
@@ -770,6 +820,7 @@ if __name__ == "__main__":
                 points=False
             ))
 
+            # Add a box plot to have MEAN and SD values.
             plot_distribution.add_trace(go.Box(
                 y=x,
                 x0=f"{name_label} [O(NP)]</b>",
@@ -788,9 +839,12 @@ if __name__ == "__main__":
                 jitter=0.5
             ))
 
+            # Distribution for the unorder context.
             matrix: np.ndarray = data_list[1][m_i, :][:, m_i]
             x: np.ndarray = matrix[np.triu_indices(matrix.shape[0], k=1)] * 100
 
+            # Those next plot are shown by default.
+            # Add a violin plot.
             plot_distribution.add_trace(go.Violin(
                 y=x,
                 x0=f"{name_label} [BC]",
@@ -809,6 +863,7 @@ if __name__ == "__main__":
                 points=False
             ))
 
+            # Add a box plot to have MEAN and SD values.
             plot_distribution.add_trace(go.Box(
                 y=x,
                 x0=f"{name_label} [BC]",
@@ -827,10 +882,17 @@ if __name__ == "__main__":
                 jitter=0.5
             ))
 
+        # Draw the plot of the network.
         plot: go.FigureWidget = scope_tree.plot_network(
             peitsch_code=code
         )
 
+        # Save the plot. [[NOTE]]: We do not include `plotlyjs` to have lighter
+        # file for the presentation. If you want to see the plot in the
+        # navigator, use:
+        # - `True` = see the plot even if the internet is offline. File are
+        #            bigger.
+        # - `cnn` = see the plot, but you have to be connected to the internet.
         plot.write_html(
             f"/home/lrouaud/Téléchargements/{code}_network.html",
             full_html=False,
@@ -871,11 +933,17 @@ if __name__ == "__main__":
     plot_distribution.update_xaxes(showline=True, linewidth=1)
     plot_distribution.update_yaxes(showline=True, linewidth=1)
 
+    # Force to show the legend, even if we have only one trace.
     plot_distribution["data"][0]["showlegend"] = True
 
     # Show the plot.
     plot_distribution.show()
 
+    # Save the plot. [[NOTE]]: We do not include `plotlyjs` to have lighter
+    # file for the presentation. If you want to see the plot in the navigator,
+    # use:
+    # - `True` = see the plot even if the internet is offline. File are bigger.
+    # - `cnn` = see the plot, but you have to be connected to the internet.
     plot_distribution.write_html(
         f"/home/lrouaud/Téléchargements/soft_context_distribution.html",
         full_html=False,
