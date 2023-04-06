@@ -152,7 +152,7 @@ def parsing():
     parser.add_argument(
         "--sample",
         default=1e-3,
-        type=int,
+        type=float,
         metavar="[float|1e-3]",
         help="    > Down sampling setting for frequent words."
     )
