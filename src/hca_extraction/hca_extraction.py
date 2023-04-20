@@ -123,9 +123,12 @@ class Domain_Manipulator:
         # we throw away every empty `str`. After that, we strip all `0` form
         # the formed clusters. To finish, we convert all of this into a
         # `list()`.
-        self.hca = list(map(
-            lambda hc_i: hc_i.strip("0"),
-            filter(None, "".join(hca).split(sep))
+        self.hca = list(filter(
+            None,
+            map(
+                lambda hc_i: hc_i.strip("0"),
+                "".join(hca).split(sep)
+            )
         ))
 
     def to_pyhca_format(self) -> str:
