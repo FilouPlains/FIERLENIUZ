@@ -39,21 +39,23 @@ def to_peitsch_code(hc: list) -> int:
 
 
 def parse_hca_file(path: str) -> object:
-    """Parse a pyHCA `.out` file and output a numpy array.
+    """Parse a pyHCA `.out` file and output a corpus and other data.
 
     Parameters
     ----------
-    file : str
+    file : `str`
         The `.out` path.
 
     Returns
     -------
-    object
-        A numpy array with parse data.
+    `tuple`
+        A `list` with parse data and `np.ndarray` to have the Peitsch code/HC
+        correspondance.
     """
     corpus: list = []
     sentence: list = []
-    translate_hc = {}
+    hc_to_peitch = {}
+    peitch_hc_to = []
 
     # Read the file.
     with open(path, "r", encoding="utf-8") as file:
@@ -76,12 +78,13 @@ def parse_hca_file(path: str) -> object:
             if hc == "1":
                 continue
 
-            if hc not in translate_hc:
-                translate_hc[hc] = to_peitsch_code([*hc])
+            if hc not in hc_to_peitch:
+                hc_to_peitch[hc] = to_peitsch_code([*hc])
+                peitch_hc_to += [[hc, hc_to_peitch[hc]]]
 
-            sentence += [translate_hc[hc]]
+            sentence += [hc_to_peitch[hc]]
 
-    return corpus
+    return corpus, np.array(peitch_hc_to)
 
 
 if __name__ == "__main__":
