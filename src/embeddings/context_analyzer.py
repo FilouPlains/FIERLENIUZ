@@ -70,8 +70,6 @@ class PairewiseContextAnalyzer:
         self.seq_a: str = seq_a
         self.seq_b: str = seq_b
 
-        # Create an array full of `-1`, of seq_a and seq_b length + 3.
-        self.array: object = np.full((self.len_a + self.len_b + 3), -1)
         self.distance: "list[int]" = [None, None]
 
     def __str__(self) -> str:
@@ -102,7 +100,7 @@ class PairewiseContextAnalyzer:
 
         return to_print
 
-    def onp_sequence_comparison(self) -> None:
+    def onp_sequence_comparison(self, normalize: bool = False) -> None:
         """The next implemented algorithm is available in `An O(NP) Sequence
         Comparison Algorithm` by Sun WU, Udi MANBER, and Gene MYERS in 
         Information Processing Letters, or in the next link:
@@ -111,43 +109,54 @@ class PairewiseContextAnalyzer:
         Based on two given `list | np.array | str`, the algorithm computes a the
         difference between those two. It is one the fastest algorithm to do
         this.
+
+        Parameters
+        ----------
+        normalize : `bool`, optional
+            If the data are normalize by both `self.seq_a + self.seq_b`, or do
+            we just compute the edition distance. By default, `False`.
         """
         p: int = -1
         # Size different between seq_a and seq_b
-        delta: int = self.len_a - self.len_b
+        delta: int = self.len_b - self.len_a
         # To shift, because in the original paper, they have a negative indexed
         # array.
         shift: int = self.len_a + 1
+        # Create an array full of `-1`, of seq_a and seq_b length + 3.
+        fp: list = [-1] * (self.len_a + self.len_b + 3)
 
         # Check when all operation are done and correct.
         while True:
             p += 1
 
             for i in range(-p, delta, 1):
-                self.array[i + shift] = self.__snake(
+                fp[i + shift] = self.__snake(
                     i,
-                    max(self.array[i - 1 + shift] + 1,
-                        self.array[i + 1 + shift])
+                    max(fp[i - 1 + shift] + 1,
+                        fp[i + 1 + shift])
                 )
 
             for i in range(delta + p, delta, -1):
-                self.array[i + shift] = self.__snake(
+                fp[i + shift] = self.__snake(
                     i,
-                    max(self.array[i - 1 + shift] + 1,
-                        self.array[i + 1 + shift])
+                    max(fp[i - 1 + shift] + 1,
+                        fp[i + 1 + shift])
                 )
 
-            self.array[delta + shift] = self.__snake(
+            fp[delta + shift] = self.__snake(
                 delta,
-                max(self.array[delta - 1 + shift] + 1,
-                    self.array[delta + 1 + shift])
+                max(fp[delta - 1 + shift] + 1,
+                    fp[delta + 1 + shift])
             )
 
-            if self.array[delta + shift] >= self.len_b:
+            if fp[delta + shift] >= self.len_b:
                 break
 
         # Sequence difference and double of p.
-        self.distance[0] = (delta + 2 * p) / (self.len_a + self.len_b)
+        if normalize:
+            self.distance[0] = (delta + 2 * p) / (self.len_a + self.len_b)
+        else:
+            self.distance[0] = (delta + 2 * p)
 
     def __snake(self, i: int, y: int) -> int:
         """Snake function to follow diagonal edges.
