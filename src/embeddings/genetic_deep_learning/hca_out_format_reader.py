@@ -55,7 +55,7 @@ def parse_hca_file(path: str) -> object:
     corpus: list = []
     sentence: list = []
     hc_to_peitch = {}
-    peitch_hc_to = []
+    peitch_to_hc = []
 
     # Read the file.
     with open(path, "r", encoding="utf-8") as file:
@@ -80,11 +80,11 @@ def parse_hca_file(path: str) -> object:
 
             if hc not in hc_to_peitch:
                 hc_to_peitch[hc] = to_peitsch_code([*hc])
-                peitch_hc_to += [[hc, hc_to_peitch[hc]]]
+                peitch_to_hc += [[hc, hc_to_peitch[hc]]]
 
             sentence += [hc_to_peitch[hc]]
 
-    return corpus, np.array(peitch_hc_to)
+    return corpus, np.array(peitch_to_hc)
 
 
 if __name__ == "__main__":
