@@ -1,10 +1,10 @@
-"""Program used to transform the whole `.hca` file into a numpy array.
+"""Program used to transform a whole `.out` pyHCA file into a corpus.
 """
 
 __authors__ = ["ROUAUD Lucas"]
 __contact__ = ["lucas.rouaud@gmail.com"]
-__date__ = "31/01/2023"
-__version__ = "1.2.2"
+__date__ = "25/04/2023"
+__version__ = "1.1.0"
 __copyright__ = "CC BY-SA"
 
 #  [N]
@@ -83,6 +83,8 @@ def parse_hca_file(path: str) -> object:
                 peitch_to_hc += [[hc, hc_to_peitch[hc]]]
 
             sentence += [hc_to_peitch[hc]]
+
+    corpus += [sentence]
 
     return corpus, np.array(peitch_to_hc)
 
