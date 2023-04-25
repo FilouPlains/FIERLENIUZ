@@ -122,6 +122,8 @@ class Darwin:
                 continue
 
             if loss_i < loss and r_2_i > r_2:
+                loss = loss_i
+                r_2 = r_2_i
                 self.best_model = model_i
 
         print(f"[BEST MODEL]: loss={loss:.3f}, r_2={r_2:.3f}")
@@ -129,7 +131,7 @@ class Darwin:
 
 if __name__ == "__main__":
     corpus, peitch_to_hc = parse_hca_file(
-        "/home/lrouaud/Téléchargements/cd-hit/cd-hit_90.out"
+        "/home/lrouaud/Téléchargements/cd-hit/cd-hit_30.out"
     )
 
     corpus = corpus
