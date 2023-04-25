@@ -62,109 +62,176 @@ def cosine_matrix(embedding: np.ndarray) -> np.ndarray:
 
 
 class Callback(CallbackAny2Vec):
-    # Evan Parker
-    def __init__(self, peitch_to_hc, correlation_matrix: ComputeCorrelation):
-        self.epoch_list = []
-        self.loss_list = []
-        self.correlation = []
-        self.peitch_to_hc = peitch_to_hc
-        self.hc = []
-        self.correlation_matrix = correlation_matrix
+    def __init__(
+        self,
+        peitch_to_hc: np.ndarray,
+        correlation_matrix: ComputeCorrelation
+    ):
+        """Instantiate a Callback object.
+
+        Parameters
+        ----------
+        peitch_to_hc : `np.ndarray`
+            To go from Peitsch code to HC.
+        correlation_matrix : `ComputeCorrelation`
+            An object to compute correlation between a cosine similarity matrix
+            and a distance of edition matrix.
+        """
+        # Fill those next `list` at each end of an epoch?
+        self.epoch_list: list = []
+        self.loss_list: list = []
+        self.correlation: list = []
+        self.hc: list = []
+
+        # Set those attributes for later.
+        self.peitch_to_hc: np.ndarray = peitch_to_hc
+        self.correlation_matrix: np.ndarray = correlation_matrix
 
     def on_epoch_end(self, model):
-        if self.hc == []:
-            for key in model.wv.index_to_key:
-                self.hc += [self.peitch_to_hc[key]]
+        """This method launch itself add the end of a learning iteration.
 
+        Parameters
+        ----------
+        model : `gensim.models.Word2Vec`
+            The word2vec model.
+        """
+        # Initialize the epoch list.
         if self.epoch_list == []:
             self.epoch_list += [0]
         else:
             self.epoch_list += [self.epoch_list[-1] + 1]
 
+        # Add a loss value to the list.
         self.loss_list += [model.get_latest_training_loss()]
 
+        # To convert Peitsch code into HC.
+        filter = np.isin(self.peitch_to_hc[:, 1],
+                         np.array(model.wv.index_to_key))
+
+        # Compute the correlation between the cosine similarity matrix and the
+        # distance of edition matrix.
         correlation: float = self.correlation_matrix.compute_correlation(
             cosine_matrix(np.array(
                 model.wv.vectors.astype("float64"),
                 dtype="float64"
-            ))
+            )),
+            self.peitch_to_hc[:, 0][filter]
         )
 
+        # Add a correlation to the matrix.
         self.correlation += [correlation]
 
 
-def run_model(
-    vector_size: int,
-    min_count: int,
-    window: int,
-    sample: int,
-    epochs: int,
-    corpus: list,
-    callback: Callback
-) -> tuple:
-    """_summary_
+class WordEmbedding:
+    def __init__(
+        self,
+        vector_size: int,
+        min_count: int,
+        window: int,
+        sample: float,
+        epochs: int
+    ):
+        """Set all the parameters of a word2vec model.
 
-    Parameters
-    ----------
-    vector_size : `int`
-        Indicates the size of the embedding vector.
-    min_count : `int`
-        When words have a frequency inferior to this given value, the words is
-        deleted.
-    window : `int`
-        Size of the window used to take words for the context prediction.
-    sample : `int`
-        Down sampling words that are to frequent.
-    epochs : `int`
-        Number of iterations of the neural network.
-    corpus : `list`
-        It's the corpus... It's actually in the form of `list[list[str]]` where
-        the first `list` represents the corpus, the second `list` a sentence,
-        and one `str item` a word.
+        Parameters
+        ----------
+        vector_size : `int`
+            The size of a embedding vector.
+        min_count : `int`
+            The frequency limit. If a word have a lower frequency than the
+            given value, it will be discard during the learning.
+        window : `int`
+            The window size to learn the context.
+        sample : `float`
+            Downsampling very frequent word. If a word is very frequent, this
+            will randomly delete some of them for increase the learning
+            quality.
+        epochs : `int`
+            Number of learning iterations.
+        """
+        self.vector_size: int = vector_size
+        self.min_count: int = min_count
+        self.window: int = window
+        self.sample: float = sample
+        self.epochs: int = epochs
 
-    Returns
-    -------
-    `tuple`
-        Give the last `LOSS` value and the last computed `CORRELATION
-        COEFFICIENT`.
-    """
-    # Build model.
-    peitsch2vec = gensim.models.Word2Vec(
-        corpus,
-        sg=1,
-        seed=1,
-        workers=cpu_count(),
-        vector_size=vector_size,
-        min_count=min_count,
-        window=window,
-        sample=sample
-    )
+    def run(
+        self,
+        corpus: list,
+        peitch_to_hc: np.ndarray,
+        correlation_matrix: ComputeCorrelation
+    ) -> tuple:
+        """Run a word2vec model.
 
-    # Train the the network.
-    peitsch2vec.build_vocab(corpus)
-    peitsch2vec.train(
-        corpus,
-        total_examples=len(corpus),
-        epochs=epochs,
-        callbacks=[callback],
-        compute_loss=True
-    )
+        Parameters
+        ----------
+        corpus : `list`
+            The corpus to learn from.
+        peitch_to_hc : `np.ndarray`
+            To go from Peitsch code to HC.
+        correlation_matrix : `ComputeCorrelation`
+            An object to compute correlation between a cosine similarity matrix
+            and a distance of edition matrix.
 
-    print(peitsch2vec.wv.index_to_key)
-    print(np.array(peitsch2vec.wv.vectors.astype("float64"), dtype="float64").shape)
+        Returns
+        -------
+        `tuple`
+            Return the last loss and R².
 
-    return callback.loss_list[-1], callback.correlation[-1]
+        Raises
+        ------
+        `RuntimeError`
+            Skip an error which occur when the `min_coun` parameter is too
+            high.
+        """
+        # Create the Callback object.
+        callback: Callback = Callback(
+            peitch_to_hc=peitch_to_hc,
+            correlation_matrix=correlation_matrix
+        )
 
+        try:
+            # Build model.
+            peitsch2vec = gensim.models.Word2Vec(
+                corpus,
+                sg=1,
+                seed=1,
+                workers=cpu_count(),
+                vector_size=int(self.vector_size),
+                min_count=int(self.min_count),
+                window=int(self.window),
+                sample=self.sample
+            )
+        except RuntimeError as run_time_error:
+            # Check the for the next error.
+            error: str = ("you must first build vocabulary before training "
+                          "the model")
 
-if __name__ == "__main__":
-    model_result: tuple = run_model(
-        vector_size=300,
-        min_count=2,
-        window=1,
-        sample=1e-2,
-        epochs=50,
-        corpus=[list(range(100))] * 100,
-        callback=Callback(None, None)
-    )
+            # This is the attended error? Yes: skip; No: throw the error.
+            if error == str(run_time_error):
+                return None, None
+            else:
+                raise RuntimeError(str(run_time_error))
 
-    print(model_result)
+        # Train the the network.
+        peitsch2vec.build_vocab(corpus)
+        peitsch2vec.train(
+            corpus,
+            total_examples=len(corpus),
+            epochs=int(self.epochs),
+            callbacks=[callback],
+            compute_loss=True
+        )
+
+        return callback.loss_list[-1], callback.correlation[-1]
+
+    def parameter(self) -> np.ndarray:
+        """Return all parameters in an `np.ndarray` form.
+
+        Returns
+        -------
+        `np.ndarray`
+            All parameters in an array.
+        """
+        return np.array([self.vector_size, self.min_count, self.window,
+                         self.sample, self.epochs])
