@@ -100,7 +100,7 @@ class PairewiseContextAnalyzer:
 
         return to_print
 
-    def onp_sequence_comparison(self, normalize: bool = False) -> None:
+    def onp_sequence_comparison(self, normalize: bool = True) -> None:
         """The next implemented algorithm is available in `An O(NP) Sequence
         Comparison Algorithm` by Sun WU, Udi MANBER, and Gene MYERS in 
         Information Processing Letters, or in the next link:
