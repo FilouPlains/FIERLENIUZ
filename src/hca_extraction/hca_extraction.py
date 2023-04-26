@@ -180,7 +180,6 @@ def hca_extractor(
                    "	1	2	{HC}\n#\n# Cluster separator:"
                    " [PROLINE] or [4 RESIDUES]\n#\n\n")
 
-
     classification: "dict[str, str]" = {}
 
     # Parse a given SCOPe classification data file.
@@ -198,7 +197,7 @@ def hca_extractor(
 
             # Adding a domain to the classification dictionary.
             classification[split_line[3]] = split_line[2]
-    
+
     # Read the `.fasta` file and write the pyHCA`.out` file.
     with open(fasta, "r", encoding="utf-8") as in_file, \
             open(out_path, "w", encoding="utf-8") as out_file:
@@ -241,8 +240,8 @@ def hca_extractor(
 
 if __name__ == "__main__":
     hca_extractor(
-        fasta="data/REDUNDANCY_DATASET/cd-hit_30.fasta",
-        out_path="/home/lrouaud/Téléchargements/cd-hit_30.out",
+        fasta="data/REDUNDANCY_DATASET/cd-hit_90.fasta",
+        out_path="data/REDUNDANCY_DATASET/cd-hit_90.out",
         scope_db="data/SCOPe_2.08_classification.txt",
         size_limit=30
     )
