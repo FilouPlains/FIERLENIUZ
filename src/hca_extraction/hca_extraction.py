@@ -152,7 +152,12 @@ class Domain_Manipulator:
         return format_str
 
 
-def hca_extractor(fasta: str, out_path: str, size_limit: int = 1):
+def hca_extractor(
+    fasta: str,
+    out_path: str,
+    scope_db: str,
+    size_limit: int = 1
+) -> None:
     """Extract all hydrophobic clusters from `.fasta` file and write a
     pyHCA`.out` file.
 
@@ -162,6 +167,9 @@ def hca_extractor(fasta: str, out_path: str, size_limit: int = 1):
         The path to the `.fasta` file.
     out_path : `str`
         The path where to write the pyHCA`.out` file.
+        The path to the `.fasta` file.
+    scope_db : `str`
+        The path SCOPe classification file, in `.txt` format.
     size_limit : `int`, optional
         If a amino sequence is strictly inferior to the give value, do not
         write it into the file. By default `1`.
@@ -172,11 +180,31 @@ def hca_extractor(fasta: str, out_path: str, size_limit: int = 1):
                    "	1	2	{HC}\n#\n# Cluster separator:"
                    " [PROLINE] or [4 RESIDUES]\n#\n\n")
 
+
+    classification: "dict[str, str]" = {}
+
+    # Parse a given SCOPe classification data file.
+    with open(scope_db, "r", encoding="utf-8") as file:
+        for line in tqdm(list(file), "    PARSING SCOPe FILE"):
+            # Skip the comment lines.
+            if line[0] == "#":
+                continue
+
+            split_line: "list[str]" = line.split()
+
+            # Skip the line containing other things than domains.
+            if split_line[3] == "-":
+                continue
+
+            # Adding a domain to the classification dictionary.
+            classification[split_line[3]] = split_line[2]
+    
     # Read the `.fasta` file and write the pyHCA`.out` file.
     with open(fasta, "r", encoding="utf-8") as in_file, \
             open(out_path, "w", encoding="utf-8") as out_file:
         out_file.write(HEADER)
         domain: Domain_Manipulator = None
+        skip: bool = False
 
         # Parsing file's lines.
         for line in tqdm(list(in_file), "PARSING `.fasta` FILE"):
@@ -193,8 +221,18 @@ def hca_extractor(fasta: str, out_path: str, size_limit: int = 1):
                     # Write lines into the file.
                     out_file.write(domain.to_pyhca_format())
 
+                domain_name: str = "d" + split_line[0][2:]
+
+                if classification[domain_name][0] not in ["a", "b", "c", "d"]:
+                    skip = True
+                    domain = None
+                    continue
+
                 # Instantiate a new `Domain_Manipulator` object.
-                domain = Domain_Manipulator(name=split_line[0][1:])
+                domain = Domain_Manipulator(name=domain_name)
+                continue
+
+            if skip:
                 continue
 
             # Append the sequence line.
@@ -203,7 +241,8 @@ def hca_extractor(fasta: str, out_path: str, size_limit: int = 1):
 
 if __name__ == "__main__":
     hca_extractor(
-        fasta="/home/lrouaud/Téléchargements/cd-hit/cd-hit_70.fasta",
-        out_path="/home/lrouaud/Téléchargements/cd-hit/cd-hit_70.out",
+        fasta="data/REDUNDANCY_DATASET/cd-hit_30.fasta",
+        out_path="/home/lrouaud/Téléchargements/cd-hit_30.out",
+        scope_db="data/SCOPe_2.08_classification.txt",
         size_limit=30
     )
