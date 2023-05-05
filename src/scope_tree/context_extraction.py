@@ -312,7 +312,6 @@ if __name__ == "__main__":
     date: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     save_path: str = ("/home/lrouaud/Téléchargements/redundancy_"
                       f"{redundancy}_context_conservation_{date}.csv")
-    save_path="/home/lrouaud/Téléchargements/redundancy.csv"
 
     with open(save_path, "w", encoding="utf-8") as file:
         file.write("PEITSCH_CODE,ALL_ORDER,A_ORDER,B_ORDER,C_ORDER,"
