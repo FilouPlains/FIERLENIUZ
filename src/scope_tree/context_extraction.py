@@ -61,6 +61,8 @@ class ScopeTree:
         # To get the index list ordered in function of which domain we compare.
         self.matrix_index: "list[list[int]]" = [[]]
 
+        self.size: int = 0
+
         # Parse a given SCOPe classification data file.
         with open(path, "r", encoding="utf-8") as file:
             for line in tqdm(list(file), " PARSING SCOPe FILE"):
@@ -106,6 +108,8 @@ class ScopeTree:
         if node not in self.index:
             # Setting index to extract context values from matrix.
             self.matrix_index += [list(self.index_dict[domain])]
+            self.size += 1
+            self.index[node] = self.size
         else:
             # Adding index to extract context values from matrix.
             self.matrix_index[self.index[node]] += list(
@@ -354,8 +358,8 @@ if __name__ == "__main__":
                     if len(list(x)) != 0:
                         line[j] = f"{np.mean(x)}"
                     else:
-                        line[j] = f"{1}"
-                        line[j + 5] = f"{1}"
+                        line[j] = f"{100}"
+                        line[j + 5] = f"{100}"
 
                     # Distribution for the unorder context.
                     matrix: np.ndarray = data_list[1][m_i, :][:, m_i]
@@ -367,7 +371,7 @@ if __name__ == "__main__":
                         line[j + 5] = f"{np.mean(x)}"
 
                 else:
-                    line[j] = f"{1}"
-                    line[j + 5] = f"{1}"
+                    line[j] = f"{100}"
+                    line[j + 5] = f"{100}"
 
-            file.write(",".join([f"{code}"] + line))
+            file.write(",".join([f"{code}"] + line) + "\n")
