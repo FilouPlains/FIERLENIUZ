@@ -259,4 +259,4 @@ if __name__ == "__main__":
     # ===============
     # Path to save the corpus.
     corpus_path: str = os.path.join(arg["output"], f"corpus_{date}.npy")
-    np.save(corpus_path, np.array(corpus), allow_pickle=True)
+    np.save(corpus_path, np.array(corpus, dtype=object), allow_pickle=True)
