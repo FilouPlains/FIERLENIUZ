@@ -38,3 +38,9 @@ target/
 
 # Exception files
 !data/*.out
+
+# HEAVY FILES!
+data/peitsch2vec/default_domain/
+data/peitsch2vec/redundancy/30_percent_redundancy
+data/peitsch2vec/redundancy/70_percent_redundancy
+data/peitsch2vec/redundancy/90_percent_redundancy
