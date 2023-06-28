@@ -8,17 +8,22 @@
 **Those next commands are to used when you are in the `📁 env/` directory:**
 
 ```bash
-conda env create --file fierlenius.yml
-conda activate fierlenius
+conda env create --file fierleniuz.yml
+conda activate fierleniuz
 ```
 
 ### Module list 📝
 
 | **Module** | **Version** |
 | :--------- | :---------: |
-| tqdm       |  `4.64.1`   |
-| numpy      |  `1.23.5`   |
+| dash       |   `2.7.0`   |
 | gensim     |   `4.2.0`   |
+| igviz      |   `0.5.1`   |
+| jupyter    |   `1.0.0`   |
+| jupyterlab |   `3.4.4`   |
 | matplotlib |   `3.6.2`   |
-| matplotlib |   `0.1.2`   |
-| plotly     |   `5.9.0`   |
+| numpy      |  `1.22.3`   |
+| pip        |  `22.3.1`   |
+| plotly     |  `5.13.1`   |
+| scipy      |   `1.8.1`   |
+| tqdm       |  `4.64.1`   |
