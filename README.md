@@ -12,21 +12,42 @@
 
 ## ⚙️ Installation
 
+### 🤓 Lazy methods
+
+A script called `INSTALL.sh` is made to facilitate this script installation. When you are in the root project directory `📁 ./`, use:
+
+```bash
+bash INSTALL.sh
+```
+
+All used commands are described in the next parts!
+
 ### 🧍‍♂️🧍‍♂️ Cloning the repository
 
 ```bash
 git clone git@github.com:FilouPlains/FIERLENIUZ.git
 ```
 
-### Install conda environment 📶
+### 📶 Install conda environment
 
-This repository is using Python. To install packages, conda is used and you can refer to their website: https://docs.conda.io/projects/conda/en/stable/user-guide/install/download.html
+This repository is using Python. To install packages, conda is used and you can refer to their website to install it: https://docs.conda.io/projects/conda/en/stable/user-guide/install/download.html
 
-Once conda is installed (and if it was not already the case), simply used those next commands to use the program:
+Once conda is installed (if it was not already the case), simply used those next commands to use the program (when you are in the root project directory `📁 ./`):
 
 ```bash
 conda env create -n fierlenius -f env/fierlenius.yml
 conda activate fierlenius
+```
+
+### 📁⏩📂 Data decompression
+
+Some data were too heavy to be simply put like that into the repository. So they were compressed. So next commands have to be used (when you are in the root project directory `📁 ./`):
+
+```bash
+tar -xf data/peitsch2vec/default_domain.tar.gz -C data/peitsch2vec/
+tar -xf data/peitsch2vec/redundancy/30_percent_redundancy.tar.gz -C data/peitsch2vec/redundancy/
+tar -xf data/peitsch2vec/redundancy/70_percent_redundancy.tar.gz -C data/peitsch2vec/redundancy/
+tar -xf data/peitsch2vec/redundancy/90_percent_redundancy.tar.gz -C data/peitsch2vec/redundancy/
 ```
 
 ## 🌲 Dependencies tree
