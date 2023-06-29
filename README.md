@@ -25,7 +25,7 @@ All used commands are described in the next parts (_**Cloning the repository**_;
 ⚠️ After the installation, **DO NOT FORGET TO ACTIVATE YOUR CONDA ENVIRONMENT**:
 
 ```bash
-conda activate fierlenius
+conda activate fierleniuz
 ```
 
 ### 🧍‍♂️🧍‍♂️ Cloning the repository
@@ -44,8 +44,8 @@ cd FIERLENIUZ/
 Once conda is installed (if it was not already the case), simply used those next commands to use the program (when you are in the root project directory `📁 ./`):
 
 ```bash
-conda env create -n fierlenius -f env/fierlenius.yml
-conda activate fierlenius
+conda env create -n fierleniuz -f env/fierleniuz.yml
+conda activate fierleniuz
 ```
 
 ### 📂 Data decompression
