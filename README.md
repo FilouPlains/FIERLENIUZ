@@ -22,6 +22,12 @@ bash INSTALL.sh
 
 All used commands are described in the next parts (_**Cloning the repository**_; _**Install conda environment**_; _**Data decompression**_)! This script is available at the release page: https://github.com/FilouPlains/FIERLENIUZ/releases/tag/v1.2.3
 
+⚠️ After the installation, **DO NOT FORGET TO ACTIVATE YOUR CONDA ENVIRONMENT**:
+
+```bash
+conda activate fierlenius
+```
+
 ### 🧍‍♂️🧍‍♂️ Cloning the repository
 
 To clone the repository in your computer, use the next command:

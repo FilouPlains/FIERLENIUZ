@@ -6,7 +6,6 @@ cd FIERLENIUZ/
 # Creating the conda environment.
 echo "[[CREATING CONDA ENVIRONMENT]]"
 conda env create -n fierleniuz -f env/fierleniuz.yml
-conda activate fierleniuz
 conda --version
 
 # Decompressing archives.
@@ -21,3 +20,6 @@ tar -xf data/peitsch2vec/redundancy/90_percent_redundancy.tar.gz \
 
 # Testing if everything is good
 python src/embeddings/peitsch2vec.py -h
+
+echo -e "DO NOT FORGET TO ACTIVATE YOUR CONDA ENVIRONMENT USING:"
+echo "    conda activate fierlenius"
