@@ -14,7 +14,7 @@
 
 ### 🤓 Lazy method
 
-A script called `INSTALL.sh` is made to facilitate this script installation. When you are in the root project directory `📁 ./`, use:
+A script called `INSTALL.sh` is made to facilitate this script installation. To used it, do:
 
 ```bash
 bash INSTALL.sh

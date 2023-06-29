@@ -5,8 +5,8 @@ cd FIERLENIUZ/
 
 # Creating the conda environment.
 echo "[[CREATING CONDA ENVIRONMENT]]"
-conda env create -n fierlenius -f env/fierlenius.yml
-conda activate fierlenius
+conda env create -n fierleniuz -f env/fierleniuz.yml
+conda activate fierleniuz
 conda --version
 
 # Decompressing archives.
