@@ -1,6 +1,7 @@
 # Starting by cloning the repository.
 echo "[[CLONING THE REPOSITORY]]"
 git clone git@github.com:FilouPlains/FIERLENIUZ.git
+cd FIERLENIUZ/
 
 # Creating the conda environment.
 echo "[[CREATING CONDA ENVIRONMENT]]"

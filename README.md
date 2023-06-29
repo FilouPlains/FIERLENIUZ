@@ -20,17 +20,20 @@ A script called `INSTALL.sh` is made to facilitate this script installation. Whe
 bash INSTALL.sh
 ```
 
-All used commands are described in the next parts!
+All used commands are described in the next parts (_**🧍‍♂️🧍‍♂️ Cloning the repository**_; _**📶 Install conda environment**_; _**📁⏩📂 Data decompression**_)!
 
 ### 🧍‍♂️🧍‍♂️ Cloning the repository
 
+To clone the repository in your computer, use the next command:
+
 ```bash
 git clone git@github.com:FilouPlains/FIERLENIUZ.git
+cd FIERLENIUZ/
 ```
 
 ### 📶 Install conda environment
 
-This repository is using Python. To install packages, conda is used and you can refer to their website to install it: https://docs.conda.io/projects/conda/en/stable/user-guide/install/download.html
+> This repository is using Python. To install packages, conda is used and you can refer to their website to install it: https://docs.conda.io/projects/conda/en/stable/user-guide/install/download.html
 
 Once conda is installed (if it was not already the case), simply used those next commands to use the program (when you are in the root project directory `📁 ./`):
 
