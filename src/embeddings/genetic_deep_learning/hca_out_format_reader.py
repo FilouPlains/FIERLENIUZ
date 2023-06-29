@@ -91,4 +91,4 @@ def parse_hca_file(path: str) -> object:
 
 if __name__ == "__main__":
     # Convert the list into a numpy array and print it.
-    print(parse_hca_file("/home/lrouaud/Téléchargements/cd-hit/cd-hit_30.out"))
+    print(parse_hca_file("data/REDUNDANCY_DATASET/cd-hit_30.out"))

@@ -36,10 +36,12 @@ def parsing():
     # ==================
     # Description of the program given when the help is cast.
     DESCRIPTION: str = ("Program to compute 'words embedding' with given "
-                        "Peitsch code. An command example, when you are at "
+                        "Peitsch code. An example of command, when you are at "
                         "the project's root (FIERLENIUS/) is:\n\n    "
-                        "$ python3 peitsch2vec.py -i data/hace.out -o "
-                        "data/mintf_30/ -d data/HCDB_summary.csv\n\nlegend:\n  "
+                        "$ python3 peitsch2vec.py -i data/pyHCA_SCOPe_30"
+                        "identity_globular.out -o ~/Download/ -d data/HCDB_"
+                        "2018_summary_rss.csv -s data/SCOPe_2.08_"
+                        "classification.txt\n\nlegend:\n  "
                         "int: Integer.\n  [type|value]: Type of the input "
                         "required, follow by the default value. So if this "
                         "optional arguments is not used, 'value' will be "

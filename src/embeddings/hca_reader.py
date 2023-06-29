@@ -45,7 +45,7 @@ def parse_hca_file(path: str, by_segment: bool = False) -> object:
                 domain_name = split_line[0][1:]
                 segment: "list[list[int]]" = []
                 segment_data: "list[list[int, float]]" = []
-                
+
                 if not by_segment:
                     domain[domain_name] = [
                         0,
@@ -64,7 +64,7 @@ def parse_hca_file(path: str, by_segment: bool = False) -> object:
                         score: int = 0
                     else:
                         score: int = float(split_line[3])
-                    
+
                     segment_data += [[
                         0,
                         int(split_line[2]) - int(split_line[1]),
@@ -77,7 +77,7 @@ def parse_hca_file(path: str, by_segment: bool = False) -> object:
                 continue
 
             segment_id: int = 0
-            
+
             for i, pos in enumerate(segment):
                 # The cluster interval is not included in the segment interval.
                 if not (pos[0] <= int(split_line[1]) <= pos[1] and
@@ -94,7 +94,7 @@ def parse_hca_file(path: str, by_segment: bool = False) -> object:
 
             if by_segment:
                 seg_name: str = f"{domain_name}_{segment_id}"
-                
+
                 if seg_name not in domain:
                     domain[seg_name] = segment_data[segment_id - 1]
 
@@ -113,7 +113,7 @@ def parse_hca_file(path: str, by_segment: bool = False) -> object:
 
 if __name__ == "__main__":
     # File emplacement.
-    path: str = "data/hca.out"
+    path: str = "data/pyHCA_SCOPe_30identity_globular.out"
 
     # Convert the list into a numpy array and print it.
     print(parse_hca_file(path, False))

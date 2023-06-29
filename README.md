@@ -12,7 +12,7 @@
 
 ## ⚙️ Installation
 
-### 🤓 Lazy methods
+### 🤓 Lazy method
 
 A script called `INSTALL.sh` is made to facilitate this script installation. When you are in the root project directory `📁 ./`, use:
 
@@ -42,7 +42,7 @@ conda env create -n fierlenius -f env/fierlenius.yml
 conda activate fierlenius
 ```
 
-### 📁⏩📂 Data decompression
+### 📂 Data decompression
 
 Some data were too heavy to be simply put like that into the repository. So they were compressed. So next commands have to be used (when you are in the root project directory `📁 ./`):
 
@@ -52,6 +52,63 @@ tar -xf data/peitsch2vec/redundancy/30_percent_redundancy.tar.gz -C data/peitsch
 tar -xf data/peitsch2vec/redundancy/70_percent_redundancy.tar.gz -C data/peitsch2vec/redundancy/
 tar -xf data/peitsch2vec/redundancy/90_percent_redundancy.tar.gz -C data/peitsch2vec/redundancy/
 ```
+
+## 💻 Implemented script
+
+### 💾 The main script
+
+To have a description of the parameters and an example of command, use this next one:
+
+```bash
+python src/embeddings/peitsch2vec.py -h
+```
+
+This script is used in order to transform a corpus of hydrophobic clusters into vectors.
+
+### 📜 Short description of the other script
+
+1. **`📁 src/embeddings/arg_parser.py` :** Parse given arguments for the `💾 The main script`.
+2. **`📁 src/embeddings/context_analyzer.py` :** Compute ordered and unordered diversity contexts. There is also a function to extract and center words for a given window.
+3. **`📁 src/embeddings/domain.py` :** UNUSED, deprecated.
+4. **`📁 src/embeddings/genetic_deep_learning/correlation_matrix.py` :** Computed the correlation between two matrices.
+5. **`📁 src/embeddings/genetic_deep_learning/genetic_algorithm.py` :** Genetic algorithms to select the best Word2Vec model.
+6. **`📁 src/embeddings/genetic_deep_learning/hca_out_format_reader.py` :** Transform a whole `.out` into a corpus usable by Word2Vec.
+7. **`📁 src/embeddings/genetic_deep_learning/running_model.py` :** Run a Word2Vec model.
+8. **`📁 src/embeddings/hca_reader.py` :** Parse a `.out` file to extract information from it.
+9. **`📁 src/embeddings/hcdb_parser.py` :** Parse the hydrophobic cluster database.
+10. **`📁 src/embeddings/notebook/comparing_distribution.ipynb` :** Plot of the distribution of some characteristics using plotly.
+11. **`📁 src/embeddings/notebook/data_meaning.ipynb` :** Plot information like mostly to the norm using Plotly.
+12. **`📁 src/embeddings/notebook/matplotlib_for_report.ipynb` :** Used matplotlib to produced `plot.pdf` to use into the report.
+13. **`📁 src/embeddings/notebook/matrix.ipynb` :** Computed cosine similarities matrix.
+14. **`📁 src/embeddings/notebook/projection.ipynb` :** Test a lot of projection for the vectors, with a lot of descriptors.
+15. **`📁 src/embeddings/notebook/sammon.py` :** Computed a sammon map using this next GitHub repository: https://github.com/tompollard/sammon.
+16. **`📁 src/embeddings/peitsch2vec.py` :** The main program used to computed Word2Vec vectors and other characteristics.
+17. **`📁 src/embeddings/peitsch.py` :** Object to manipulate the hydrophobic clusters.
+18. **`📁 src/embeddings/write_csv.py` :** Write a `.csv` file with some hydrophobic clusters characteristics.
+19. **`📁 src/hca_extraction/hca_extraction.py` :** Go from a `.fasta` files to a `.out` file.
+20. **`📁 src/scope_tree/context_extraction.py` :** Extract the context informations, taking also in consideration the SCOPe levels, and output a `.csv` file.
+21. **`📁 src/scope_tree/scope_score.py` :** Computed a score between two or multiple domains to see how far they are from each other in the SCOPe tree.
+22. **`📁 src/scope_tree/scope_tree.py` :** Computed a network of one given hydrophobic clusters. The network is linked to the SCOPe tree, with the indications of the context diversity on each nodes.
+
+## 📊 Dataset quick description
+
+1. **`📁 data/HCDB_2018_summary_rss.csv` :** Hydrophobic clusters database with the summary of the regular secondary structures. Made in 2018.
+2. **`📁 pyHCA_SCOPe_30identity_globular.out` :** pyHCA output. It were applied on the SCOPe `2.07` database with a redundancy level of 30 %, download trough Astral.
+3. **`📁 SCOPe_2.08_classification.txt` :** A file that permits to go from the domain ID to the SCOPe precise class (for instance, from `d1ux8a_` to `a.1.1.1`).
+4. **`📁 output_plot/` :** All plots produced by the notebook `src/embeddings/notebook/matplotlib_for_report.ipynb`, all in `.pdf` format.
+5. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.fasta` :** Amino acids sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit.
+6. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.out` :** Hydrophobic clusters sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. Not treated by pyHCA.
+7. **`📁 data/REDUNDANCY_DATASET/redundancy_30_context_conservation_2023-05-09_14-38-42.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_70_context_conservation_2023-05-11_10-39-29.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_90_context_conservation_2023-05-11_10-41-19.csv` :** All context diversity computed for different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. _**Little things to know:** `100.0 =` context computed with a full diversity; `100 =` context could not be computed, so a full diversity have been attributed._
+8. **`📁 data/peitsch2vec/default_domain/` :** Data for the dataset with a redundancy level of 30 %, treated by pyHCA, not treated by cd-hit.
+9. **`📁 data/peitsch2vec/redundancy/30_percent_redundancy/`; `📁 data/peitsch2vec/redundancy/70_percent_redundancy/`; `📁 data/peitsch2vec/redundancy/90_percent_redundancy/` :** Data for the dataset with a redundancy level of 30 %, 70 %, 90 %, not treated by pyHCA, treated by cd-hit.
+
+**For the path given in `8.` and `9.`:**
+
+10. **`📁 characteristics_`{date}`.npy/` :** Hydrophobic clusters characteristics for a given redundancy level, like the size of the regular secondary structure.
+11. **`📁 corpus_`{date}`.npy/` :** Corpus given to Word2Vec, after applying the filters.
+12. **`📁 embedding_`{date}`.npy/` :** Vector embedding generated by Word2Vec.
+13. **`📁 matrix_cosine_`{date}`.npy/` :** Cosine similarities matrix generated from the vector embedding, generated by Word2Vec.
+14. **`📁 model_`{date}`.w2v/` :** The trained Word2Vec models.
 
 ## 🌲 Dependencies tree
 
