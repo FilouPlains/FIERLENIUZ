@@ -20,7 +20,7 @@ A script called `INSTALL.sh` is made to facilitate this script installation. To 
 bash INSTALL.sh
 ```
 
-All used commands are described in the next parts (_**🧍‍♂️🧍‍♂️ Cloning the repository**_; _**📶 Install conda environment**_; _**📁⏩📂 Data decompression**_)!
+All used commands are described in the next parts (_**Cloning the repository**_; _**Install conda environment**_; _**Data decompression**_)! This script is available at the release page: https://github.com/FilouPlains/FIERLENIUZ/releases/tag/v1.2.3
 
 ### 🧍‍♂️🧍‍♂️ Cloning the repository
 
