@@ -10,6 +10,10 @@
 
 📚 Formation: Master 2 Bio-informatics at *Univerité de Paris*
 
+📏 This program were write during an internship in **Institut de Minéralogie, de Physique et de Cosmochimie, Sorbonne Université, UMR7590, CNRS, Muséum national d’Histoire naturelle**; in the **bioinformatique et biophysique** team.
+
+_**📋 This work was supported by the French National Research Agency (ANR-21-CE12-0021).**_
+
 ## ⚙️ Installation
 
 ### 🤓 Lazy method
@@ -71,38 +75,65 @@ python src/embeddings/peitsch2vec.py -h
 
 This script is used in order to transform a corpus of hydrophobic clusters into vectors.
 
+### 🌐 External software
+
+`cd-hit` is a software used to treated sequences redundancy. It is available at this next webpage (GitHub) https://github.com/weizhongli/cdhit/releases. To use it, type the following command is used:
+
+```bash
+cd-hit -i {scope_database}.fa -o cd-hit_{i}.fasta -c 1
+```
+
+With :
+- **`{scope_database}.fa` :** Use here the original SCOPe database, with the sequence at `.fa` format. You can download the dataset here: https://scop.berkeley.edu/astral/subsets/ver=2.08. In `Percentage identity-filtered Astral SCOPe genetic domain sequence subsets, based on PDB SEQRES records`, use `sequences` and `less than 30`, `less than 70` and `less than 90` parameters.
+- **`cd-hit_{i}.fasta` :** How to name the output file. For this respository, the output is named `cd-hit_30.fasta`, `cd-hit_70.fasta` and `cd-hit_90.fasta`.
+
+### 🖥 Cluster accession
+
+For some scripts, the cluster **PCIA - Plateforme de calcul intensif du Muséum national d’Histoire naturelle** have been used. The next script were used to launch the job (in this next cluster path `📁 STAGE_M2/`):
+
+```bash
+sbatch LAUNCH_SCRIPT.sh
+```
+
+**⚠️ TWO THINGS TO KNOW:**
+1. Output are done in next directory: `📁 /mnt/beegfs/abruley/CONTEXT/`.
+2. The script **HAVE TO BE MANUALLY EDITED** if you want to change the input database.
+
+The used script is available at `📁 src/cluster/launch_script_90.sh`.
+
 ### 📜 Short description of the other script
 
-1. **`📁 src/embeddings/arg_parser.py` :** Parse given arguments for the `💾 The main script`.
-2. **`📁 src/embeddings/context_analyzer.py` :** Compute ordered and unordered diversity contexts. There is also a function to extract and center words for a given window.
-3. **`📁 src/embeddings/domain.py` :** UNUSED, deprecated.
-4. **`📁 src/embeddings/genetic_deep_learning/correlation_matrix.py` :** Computed the correlation between two matrices.
-5. **`📁 src/embeddings/genetic_deep_learning/genetic_algorithm.py` :** Genetic algorithms to select the best Word2Vec model.
-6. **`📁 src/embeddings/genetic_deep_learning/hca_out_format_reader.py` :** Transform a whole `.out` into a corpus usable by Word2Vec.
-7. **`📁 src/embeddings/genetic_deep_learning/running_model.py` :** Run a Word2Vec model.
-8. **`📁 src/embeddings/hca_reader.py` :** Parse a `.out` file to extract information from it.
-9. **`📁 src/embeddings/hcdb_parser.py` :** Parse the hydrophobic cluster database.
-10. **`📁 src/embeddings/notebook/comparing_distribution.ipynb` :** Plot of the distribution of some characteristics using plotly.
-11. **`📁 src/embeddings/notebook/data_meaning.ipynb` :** Plot information like mostly to the norm using Plotly.
-12. **`📁 src/embeddings/notebook/matplotlib_for_report.ipynb` :** Used matplotlib to produced `plot.pdf` to use into the report.
-13. **`📁 src/embeddings/notebook/matrix.ipynb` :** Computed cosine similarities matrix.
-14. **`📁 src/embeddings/notebook/projection.ipynb` :** Test a lot of projection for the vectors, with a lot of descriptors.
-15. **`📁 src/embeddings/notebook/sammon.py` :** Computed a sammon map using this next GitHub repository: https://github.com/tompollard/sammon.
-16. **`📁 src/embeddings/peitsch2vec.py` :** The main program used to computed Word2Vec vectors and other characteristics.
-17. **`📁 src/embeddings/peitsch.py` :** Object to manipulate the hydrophobic clusters.
-18. **`📁 src/embeddings/write_csv.py` :** Write a `.csv` file with some hydrophobic clusters characteristics.
-19. **`📁 src/hca_extraction/hca_extraction.py` :** Go from a `.fasta` files to a `.out` file.
-20. **`📁 src/scope_tree/context_extraction.py` :** Extract the context informations, taking also in consideration the SCOPe levels, and output a `.csv` file.
-21. **`📁 src/scope_tree/scope_score.py` :** Computed a score between two or multiple domains to see how far they are from each other in the SCOPe tree.
-22. **`📁 src/scope_tree/scope_tree.py` :** Computed a network of one given hydrophobic clusters. The network is linked to the SCOPe tree, with the indications of the context diversity on each nodes.
+1. **`📁 src/cluster/launch_script_90.sh` :** Script used on the cluster to computed the context diversity.
+2. **`📁 src/embeddings/arg_parser.py` :** Parse given arguments for the `💾 The main script`.
+3. **`📁 src/embeddings/context_analyzer.py` :** Compute ordered and unordered diversity contexts. There is also a function to extract and center words for a given window.
+4. **`📁 src/embeddings/domain.py` :** UNUSED, deprecated.
+5. **`📁 src/embeddings/genetic_deep_learning/correlation_matrix.py` :** Computed the correlation between two matrices.
+6. **`📁 src/embeddings/genetic_deep_learning/genetic_algorithm.py` :** Genetic algorithms to select the best Word2Vec model.
+7. **`📁 src/embeddings/genetic_deep_learning/hca_out_format_reader.py` :** Transform a whole `.out` into a corpus usable by Word2Vec.
+8. **`📁 src/embeddings/genetic_deep_learning/running_model.py` :** Run a Word2Vec model.
+9. **`📁 src/embeddings/hca_reader.py` :** Parse a `.out` file to extract information from it.
+10. **`📁 src/embeddings/hcdb_parser.py` :** Parse the hydrophobic cluster database.
+11. **`📁 src/embeddings/notebook/comparing_distribution.ipynb` :** Plot of the distribution of some characteristics using plotly.
+12. **`📁 src/embeddings/notebook/data_meaning.ipynb` :** Plot information like mostly to the norm using Plotly.
+13. **`📁 src/embeddings/notebook/matplotlib_for_report.ipynb` :** Used matplotlib to produced `plot.pdf` to use into the report.
+14. **`📁 src/embeddings/notebook/matrix.ipynb` :** Computed cosine similarities matrix.
+15. **`📁 src/embeddings/notebook/projection.ipynb` :** Test a lot of projection for the vectors, with a lot of descriptors.
+16. **`📁 src/embeddings/notebook/sammon.py` :** Computed a sammon map using this next GitHub repository: https://github.com/tompollard/sammon.
+17. **`📁 src/embeddings/peitsch2vec.py` :** The main program used to computed Word2Vec vectors and other characteristics.
+18. **`📁 src/embeddings/peitsch.py` :** Object to manipulate the hydrophobic clusters.
+19. **`📁 src/embeddings/write_csv.py` :** Write a `.csv` file with some hydrophobic clusters characteristics.
+20. **`📁 src/hca_extraction/hca_extraction.py` :** Go from a `.fasta` files to a `.out` file.
+21. **`📁 src/scope_tree/context_extraction.py` :** Extract the context informations, taking also in consideration the SCOPe levels, and output a `.csv` file.
+22. **`📁 src/scope_tree/scope_score.py` :** Computed a score between two or multiple domains to see how far they are from each other in the SCOPe tree.
+23. **`📁 src/scope_tree/scope_tree.py` :** Computed a network of one given hydrophobic clusters. The network is linked to the SCOPe tree, with the indications of the context diversity on each nodes.
 
 ## 📊 Dataset quick description
 
 1. **`📁 data/HCDB_2018_summary_rss.csv` :** Hydrophobic clusters database with the summary of the regular secondary structures. Made in 2018.
-2. **`📁 pyHCA_SCOPe_30identity_globular.out` :** pyHCA output. It were applied on the SCOPe `2.07` database with a redundancy level of 30 %, download trough Astral.
-3. **`📁 SCOPe_2.08_classification.txt` :** A file that permits to go from the domain ID to the SCOPe precise class (for instance, from `d1ux8a_` to `a.1.1.1`).
+2. **`📁 pyHCA_SCOPe_30identity_globular.out` :** pyHCA output. It were applied on the SCOPe `2.07` database with a redundancy level of 30 %, download trough Astral. Original dataset available here: https://raw.githubusercontent.com/DarkVador-HCA/Order-Disorder-continuum/main/data/SCOPe/hca.out.
+3. **`📁 SCOPe_2.08_classification.txt` :** A file that permits to go from the domain ID to the SCOPe precise class (for instance, from `d1ux8a_` to `a.1.1.1`). File is available here: https://scop.berkeley.edu/downloads/parse/dir.des.scope.2.08-stable.txt.
 4. **`📁 output_plot/` :** All plots produced by the notebook `src/embeddings/notebook/matplotlib_for_report.ipynb`, all in `.pdf` format.
-5. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.fasta` :** Amino acids sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit.
+5. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.fasta` :** Amino acids sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. Original dataset are available here: https://scop.berkeley.edu/astral/subsets/ver=2.08.
 6. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.out` :** Hydrophobic clusters sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. Not treated by pyHCA.
 7. **`📁 data/REDUNDANCY_DATASET/redundancy_30_context_conservation_2023-05-09_14-38-42.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_70_context_conservation_2023-05-11_10-39-29.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_90_context_conservation_2023-05-11_10-41-19.csv` :** All context diversity computed for different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. _**Little things to know:** `100.0 =` context computed with a full diversity; `100 =` context could not be computed, so a full diversity have been attributed._
 8. **`📁 data/peitsch2vec/default_domain/` :** Data for the dataset with a redundancy level of 30 %, treated by pyHCA, not treated by cd-hit.
