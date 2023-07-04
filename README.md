@@ -185,28 +185,32 @@ The used script is available at `📁 src/cluster/launch_script_90.sh`.
 ```bash
 $ tree -lF -h
 
-[4.0K]
+[6.8G]
 .
 ├── [4.0K]  "data/"
-│   ├── [4.0K]  "output_plot/"
-│   ├── [4.0K]  "peitsch2vec/"
-│   │   ├── [ 40M]  "default_domain.tar.gz"
-│   │   └── [4.0K]  "redundancy/"
-│   │       ├── [ 39M]  "30_percent_redundancy.tar.gz"
-│   │       ├── [159M]  "70_percent_redundancy.tar.gz"
-│   │       └── [248M]  "90_percent_redundancy.tar.gz"
-│   └── [4.0K]  "REDUNDANCY_DATASET/"
+│   ├── [4.0K]  "output_plot/"
+│   ├── [4.0K]  "peitsch2vec/"
+│   │   ├── [4.0K]  "default_domain/"
+│   │   └── [4.0K]  "redundancy/"
+│   │       ├── [4.0K]  "30_percent_redundancy/"
+│   │       ├── [4.0K]  "70_percent_redundancy/"
+│   │       ├── [4.0K]  "90_percent_redundancy/"
+│   └── [4.0K]  "REDUNDANCY_DATASET/"
 ├── [4.0K]  "env/"
+│   ├── [ 905]  "fierleniuz.yml"
+│   └── [ 885]  "README.md"
+├── [ 895]  "INSTALL.sh"
 ├── [ 20K]  "LICENSE"
-├── [3.8K]  "README.md"
+├── [ 13K]  "README.md"
 └── [4.0K]  "src/"
-    ├── [4.0K]  "embeddings/"
-    │   ├── [4.0K]  "genetic_deep_learning/"
-    │   └── [4.0K]  "notebook/"
-    ├── [4.0K]  "hca_extraction/"
-    └── [4.0K]  "scope_tree/"
+  ├── [4.0K]  "cluster/"
+  ├── [4.0K]  "embeddings/"
+  │   ├── [4.0K]  "genetic_deep_learning/"
+  │   └── [4.0K]  "notebook/"
+  ├── [4.0K]  "hca_extraction/"
+  └── [4.0K]  "scope_tree/"
 
-17 directories, 84 files
+18 directories, 88 files
 ```
 
 _This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)._
