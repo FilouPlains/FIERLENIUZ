@@ -10,13 +10,11 @@ __copyright__ = "CC BY-SA"
 
 # [ FULL IMPORT ]
 import numpy as np
-import sys
 
 # [ PARTIAL IMPORT ]
-# [D]
-from datetime import datetime
-# [O]
-from os import popen
+# [A]
+from arg_parser import parsing
+# [S]
 from sys import path
 # [T]
 from tqdm import tqdm
@@ -303,21 +301,27 @@ def get_domain(path: str, code: int) -> "tuple":
 
 
 if __name__ == "__main__":
-    redundancy: int = int(sys.argv[1])
+    introduction: str = """
+    ███████╗██╗███████╗██████╗ ██╗     ███████╗███╗   ██╗██╗██╗   ██╗███████╗
+    ██╔════╝██║██╔════╝██╔══██╗██║     ██╔════╝████╗  ██║██║██║   ██║██╔════╝
+    █████╗  ██║█████╗  ██████╔╝██║     █████╗  ██╔██╗ ██║██║██║   ██║███████╗
+    ██╔══╝  ██║██╔══╝  ██╔══██╗██║     ██╔══╝  ██║╚██╗██║██║██║   ██║╚════██║
+    ██║     ██║███████╗██║  ██║███████╗███████╗██║ ╚████║██║╚██████╔╝███████║
+    ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚══════╝
+    """
 
-    characteristic: object = np.transpose(np.load(
-        popen(f"ls data/peitsch2vec/redundancy/{redundancy}_percent_redundancy"
-              "/characteristics*.npy").readlines()[0].strip(),
-        allow_pickle=True
-    ))
+    argument: "dict[str: str|int]" = parsing(is_directory=False)
 
-    peitsch: object = characteristic[0].astype("int64")
+    if not argument["integer"]:
+        print(argument["input"])
+        peitsch: np.ndarray = np.transpose(np.load(
+            argument["input"],
+            allow_pickle=True
+        ))[0].astype("int64")[-2:]
+    else:
+        peitsch: list = [argument["input"]]
 
-    date: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_path: str = ("/home/lrouaud/Téléchargements/redundancy_"
-                      f"{redundancy}_context_conservation_{date}.csv")
-
-    with open(save_path, "w", encoding="utf-8") as file:
+    with open(argument["output"], "w", encoding="utf-8") as file:
         file.write("PEITSCH_CODE,ALL_ORDER,A_ORDER,B_ORDER,C_ORDER,"
                    "D_ORDER,ALL_UNORDER,A_UNORDER,B_UNORDER,C_UNORDER,"
                    "D_UNORDER\n")
@@ -325,14 +329,11 @@ if __name__ == "__main__":
         # Parse all Peitsch code.
         for i, code in enumerate(tqdm(peitsch, desc=f"PARSING PEISCH_CODE")):
             # Get all data and context values in matrix format.
-            domain_list, data_list = get_domain(
-                f"data/REDUNDANCY_DATASET/cd-hit_{redundancy}.out",
-                code
-            )
+            domain_list, data_list = get_domain(argument["context"], code)
 
             # Instantiate a Scope object
             scope_tree: ScopeTree = ScopeTree(
-                "data/SCOPe_2.08_classification.txt",
+                argument["scope"],
                 index_dict=data_list[2]
             )
 
@@ -358,8 +359,8 @@ if __name__ == "__main__":
                     if len(list(x)) != 0:
                         line[j] = f"{np.mean(x)}"
                     else:
-                        line[j] = f"{100}"
-                        line[j + 5] = f"{100}"
+                        line[j] = "NA"
+                        line[j + 5] = "NA"
 
                     # Distribution for the unorder context.
                     matrix: np.ndarray = data_list[1][m_i, :][:, m_i]
@@ -371,7 +372,7 @@ if __name__ == "__main__":
                         line[j + 5] = f"{np.mean(x)}"
 
                 else:
-                    line[j] = f"{100}"
-                    line[j + 5] = f"{100}"
+                    line[j] = "NA"
+                    line[j + 5] = "NA"
 
             file.write(",".join([f"{code}"] + line) + "\n")

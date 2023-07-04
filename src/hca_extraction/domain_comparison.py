@@ -236,7 +236,7 @@ if __name__ == "__main__":
         105,
         165,
         path="data/REDUNDANCY_DATASET/cd-hit_90.out",
-        treshold=0.2,
+        treshold=0.5,
         skip_same=True,
         print_results=True
     ))

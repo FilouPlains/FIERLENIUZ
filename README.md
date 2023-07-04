@@ -75,6 +75,26 @@ python src/embeddings/peitsch2vec.py -h
 
 This script is used in order to transform a corpus of hydrophobic clusters into vectors.
 
+### 💾 Secondary scripts
+
+1. A script used to transform a `.fasta` file into a `.out` file. To have a description of the parameters and an example of command, use this next one:
+
+```bash
+python3 src/hca_extraction/hca_extraction.py -h
+```
+
+2. A script used do computed the context diversity ad output a `.csv` format. To have a description of the parameters and an example of command, use this next one:
+
+```bash
+python3 src/scope_tree/context_extraction.py -h
+```
+
+3. A script used to computed a network linked to SCOPe with context diversity coloration and context diversity distribution through plotly. To have a description of the parameters and an example of command, use this next one:
+
+```bash
+python3 src/scope_tree/scope_tree.py -h
+```
+
 ### 🌐 External software
 
 `cd-hit` is a software used to treated sequences redundancy. It is available at this next webpage (GitHub) https://github.com/weizhongli/cdhit/releases. To use it, type the following command is used:
@@ -122,10 +142,13 @@ The used script is available at `📁 src/cluster/launch_script_90.sh`.
 17. **`📁 src/embeddings/peitsch2vec.py` :** The main program used to computed Word2Vec vectors and other characteristics.
 18. **`📁 src/embeddings/peitsch.py` :** Object to manipulate the hydrophobic clusters.
 19. **`📁 src/embeddings/write_csv.py` :** Write a `.csv` file with some hydrophobic clusters characteristics.
-20. **`📁 src/hca_extraction/hca_extraction.py` :** Go from a `.fasta` files to a `.out` file.
-21. **`📁 src/scope_tree/context_extraction.py` :** Extract the context informations, taking also in consideration the SCOPe levels, and output a `.csv` file.
-22. **`📁 src/scope_tree/scope_score.py` :** Computed a score between two or multiple domains to see how far they are from each other in the SCOPe tree.
-23. **`📁 src/scope_tree/scope_tree.py` :** Computed a network of one given hydrophobic clusters. The network is linked to the SCOPe tree, with the indications of the context diversity on each nodes.
+20. **`📁 src/hca_extraction/arg_parser.py` :** Parse given arguments for the `📁 src/hca_extraction/hca_extraction.py` script.
+21. **`📁src/hca_extraction/domain_comparison.py` :** Script used to compared multiple domain between them by computing the context diversity and output the best result through an user define threshold.
+22. **`📁 src/hca_extraction/hca_extraction.py` :** Go from a `.fasta` files to a `.out` file.
+23. **`📁 src/scope_tree/arg_parser.py` :** Parse given arguments for the `📁 src/scope_tree/context_extraction.py` and `📁 src/scope_tree/scope_score.py` scripts.
+24. **`📁 src/scope_tree/context_extraction.py` :** Extract the context informations, taking also in consideration the SCOPe levels, and output a `.csv` file.
+25. **`📁 src/scope_tree/scope_score.py` :** Computed a score between two or multiple domains to see how far they are from each other in the SCOPe tree.
+26. **`📁 src/scope_tree/scope_tree.py` :** Computed a network of one given hydrophobic clusters. The network is linked to the SCOPe tree, with the indications of the context diversity on each nodes.
 
 ## 📊 Dataset quick description
 
@@ -135,7 +158,7 @@ The used script is available at `📁 src/cluster/launch_script_90.sh`.
 4. **`📁 output_plot/` :** All plots produced by the notebook `src/embeddings/notebook/matplotlib_for_report.ipynb`, all in `.pdf` format.
 5. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.fasta`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.fasta` :** Amino acids sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. Original dataset are available here: https://scop.berkeley.edu/astral/subsets/ver=2.08.
 6. **`📁 data/REDUNDANCY_DATASET/cd-hit_30.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_70.out`; `📁 data/REDUNDANCY_DATASET/cd-hit_90.out` :** Hydrophobic clusters sequences from SCOPe `2.08` with different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. Not treated by pyHCA.
-7. **`📁 data/REDUNDANCY_DATASET/redundancy_30_context_conservation_2023-05-09_14-38-42.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_70_context_conservation_2023-05-11_10-39-29.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_90_context_conservation_2023-05-11_10-41-19.csv` :** All context diversity computed for different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. _**Little things to know:** `100.0 =` context computed with a full diversity; `100 =` context could not be computed, so a full diversity have been attributed._
+7. **`📁 data/REDUNDANCY_DATASET/redundancy_30_context_conservation_2023-05-09_14-38-42.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_70_context_conservation_2023-05-11_10-39-29.csv`; `📁 data/REDUNDANCY_DATASET/redundancy_90_context_conservation_2023-05-11_10-41-19.csv` :** All context diversity computed for different redundancy levels (30 %, 70 %, 90 %). Redundancy were treated through Astral and cd-hit. _**Little things to know:** `100.0 =` context computed with a full diversity; `100 =` context could not be computed, so a full diversity have been attributed. This have been corrected in the program by putting `NA` instead of "`int(100)`"_
 8. **`📁 data/peitsch2vec/default_domain/` :** Data for the dataset with a redundancy level of 30 %, treated by pyHCA, not treated by cd-hit.
 9. **`📁 data/peitsch2vec/redundancy/30_percent_redundancy/`; `📁 data/peitsch2vec/redundancy/70_percent_redundancy/`; `📁 data/peitsch2vec/redundancy/90_percent_redundancy/` :** Data for the dataset with a redundancy level of 30 %, 70 %, 90 %, not treated by pyHCA, treated by cd-hit.
 

@@ -28,8 +28,14 @@ import numpy as np
 
 
 # [ PARTIAL IMPORT ]
+# [A]
+from arg_parser import parsing
+# [D]
+from datetime import datetime
 # [M]
 from matplotlib import colormaps
+# [O]
+from os.path import join
 # [P]
 import plotly.graph_objects as go
 # [S]
@@ -749,8 +755,27 @@ def get_domain(path: str, code: int) -> "tuple":
 
 
 if __name__ == "__main__":
-    # List of Peitsch code to used to plot the network plot and distribution.
-    PEITSCH_CODE: int = [105, 147, 201, 921]
+    introduction: str = """
+    ███████╗██╗███████╗██████╗ ██╗     ███████╗███╗   ██╗██╗██╗   ██╗███████╗
+    ██╔════╝██║██╔════╝██╔══██╗██║     ██╔════╝████╗  ██║██║██║   ██║██╔════╝
+    █████╗  ██║█████╗  ██████╔╝██║     █████╗  ██╔██╗ ██║██║██║   ██║███████╗
+    ██╔══╝  ██║██╔══╝  ██╔══██╗██║     ██╔══╝  ██║╚██╗██║██║██║   ██║╚════██║
+    ██║     ██║███████╗██║  ██║███████╗███████╗██║ ╚████║██║╚██████╔╝███████║
+    ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚══════╝
+    """
+
+    print(introduction)
+    argument: "dict[str: str|int]" = parsing(is_directory=True)
+
+    if not argument["integer"]:
+        peitsch: np.ndarray = np.transpose(np.load(
+            argument["input"],
+            allow_pickle=True
+        ))[0].astype("int64")
+    else:
+        peitsch: list = [argument["input"]]
+
+    date: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     # To initialize the plot distribution (box + violin).
     plot_distribution: object = go.Figure()
@@ -758,21 +783,18 @@ if __name__ == "__main__":
     cmap = colormaps["viridis"]
 
     # Fill the plot with transparent colours.
-    color: object = cmap(np.linspace(0, 1, len(PEITSCH_CODE)))
+    color: object = cmap(np.linspace(0, 1, len(peitsch)))
     fill: object = np.array(color)
     fill[:, -1] = 0.35
 
     # Parse all Peitsch code.
-    for i, code in enumerate(PEITSCH_CODE):
+    for i, code in enumerate(peitsch):
         # Get all data and context values in matrix format.
-        domain_list, data_list = get_domain(
-            "data/pyHCA_SCOPe_30identity_globular.out",
-            code
-        )
+        domain_list, data_list = get_domain(argument["context"], code)
 
         # Instantiate a Scope object
         scope_tree: ScopeTree = ScopeTree(
-            "data/SCOPe_2.08_classification.txt",
+            argument["scope"],
             order_matrix=data_list[0],
             unorder_matrix=data_list[1],
             index_dict=data_list[2]
@@ -794,11 +816,13 @@ if __name__ == "__main__":
                 show_legend: bool = False
 
             # Distribution for the order context.
-            m_i: set = list(
-                set(scope_tree.matrix_index[scope_tree.index[key]]))
+            m_i: set = list(set(scope_tree.matrix_index[scope_tree.index[key]]))
             matrix: np.ndarray = data_list[0][m_i, :][:, m_i]
             x: np.ndarray = matrix[np.triu_indices(matrix.shape[0],
                                    k=1)] * 100
+
+            if x.shape[0] == 0:
+                continue
 
             # Those next plot are hide by default.
             # Add a violin plot.
@@ -887,18 +911,12 @@ if __name__ == "__main__":
             peitsch_code=code
         )
 
-        # Save the plot. [[NOTE]]: We do not include `plotlyjs` to have lighter
-        # file for the presentation. If you want to see the plot in the
-        # navigator, use:
-        # - `True` = see the plot even if the internet is offline. File are
-        #            bigger.
-        # - `cnn` = see the plot, but you have to be connected to the internet.
-        plot.write_html(
-            f"/home/lrouaud/Téléchargements/{code}_network.html",
-            full_html=False,
-            include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
-                              "plotly.min.js")
+        save_path: str = join(
+            argument["output"],
+            f"network_{code}_{date}.html"
         )
+
+        plot.write_html(save_path, full_html=False, include_plotlyjs=True)
 
     # Add the rectangle border.
     plot_distribution.add_shape(
@@ -936,17 +954,11 @@ if __name__ == "__main__":
     # Force to show the legend, even if we have only one trace.
     plot_distribution["data"][0]["showlegend"] = True
 
-    # Show the plot.
-    plot_distribution.show()
-
-    # Save the plot. [[NOTE]]: We do not include `plotlyjs` to have lighter
-    # file for the presentation. If you want to see the plot in the navigator,
-    # use:
-    # - `True` = see the plot even if the internet is offline. File are bigger.
-    # - `cnn` = see the plot, but you have to be connected to the internet.
-    plot_distribution.write_html(
-        f"/home/lrouaud/Téléchargements/soft_context_distribution.html",
-        full_html=False,
-        include_plotlyjs=("../../node_modules/plotly.js-dist-min/"
-                          "plotly.min.js")
+    # Save the plot distribution.
+    save_path: str = join(
+        argument["output"],
+        f"context_distribution_{date}.html"
     )
+
+    plot_distribution.write_html(save_path, full_html=False,
+                                 include_plotlyjs=True)

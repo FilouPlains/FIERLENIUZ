@@ -10,6 +10,8 @@ __copyright__ = "CC BY-SA"
 # [N]
 import numpy as np
 
+# [A]
+from arg_parser import parsing
 # [T]
 from textwrap import fill
 from tqdm import tqdm
@@ -239,9 +241,21 @@ def hca_extractor(
 
 
 if __name__ == "__main__":
+    introduction: str = """
+    ███████╗██╗███████╗██████╗ ██╗     ███████╗███╗   ██╗██╗██╗   ██╗███████╗
+    ██╔════╝██║██╔════╝██╔══██╗██║     ██╔════╝████╗  ██║██║██║   ██║██╔════╝
+    █████╗  ██║█████╗  ██████╔╝██║     █████╗  ██╔██╗ ██║██║██║   ██║███████╗
+    ██╔══╝  ██║██╔══╝  ██╔══██╗██║     ██╔══╝  ██║╚██╗██║██║██║   ██║╚════██║
+    ██║     ██║███████╗██║  ██║███████╗███████╗██║ ╚████║██║╚██████╔╝███████║
+    ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚══════╝
+    """
+
+    print(introduction)
+    parser: "dict[str: ]" = parsing()
+
     hca_extractor(
-        fasta="data/REDUNDANCY_DATASET/cd-hit_90.fasta",
-        out_path="data/REDUNDANCY_DATASET/cd-hit_90.out",
-        scope_db="data/SCOPe_2.08_classification.txt",
+        fasta=parser["input"],
+        out_path=parser["output"],
+        scope_db=parser["scope"],
         size_limit=30
     )

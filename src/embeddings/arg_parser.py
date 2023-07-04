@@ -38,11 +38,11 @@ def parsing():
     DESCRIPTION: str = ("Program to compute 'words embedding' with given "
                         "Peitsch code. An example of command, when you are at "
                         "the project's root (FIERLENIUS/) is:\n\n    "
-                        "$ python3 peitsch2vec.py -i data/pyHCA_SCOPe_30"
-                        "identity_globular.out -o ~/Download/ -d data/HCDB_"
-                        "2018_summary_rss.csv -s data/SCOPe_2.08_"
-                        "classification.txt\n\nlegend:\n  "
-                        "int: Integer.\n  [type|value]: Type of the input "
+                        "$ python3 src/embeddings/peitsch2vec.py"
+                        " -i data/pyHCA_SCOPe_30identity_globular.out -o "
+                        "~/Download/ -d data/HCDB_2018_summary_rss.csv -s "
+                        "data/SCOPe_2.08_classification.txt\n\nLegend:\n    "
+                        "int: Integer.\n    [type|value]: Type of the input "
                         "required, follow by the default value. So if this "
                         "optional arguments is not used, 'value' will be "
                         "chosen.")
@@ -217,23 +217,25 @@ def parsing():
 
     # Check the HCDB file extension.
     if not argument["hcdb"].endswith(".csv"):
-        sysexit(f"\n[Err##] The hcdb file '{argument['hcdb']}' extension "
+        sysexit(f"\n[Err##] The HCDB file '{argument['hcdb']}' extension "
                 "is invalid. Please, give a '.csv' file.")
 
     # Check if the HCDB file exists.
     if not os.path.exists(argument["hcdb"]):
-        sysexit(f"\n[Err##] The input file '{argument['hcdb']}' does not "
+        sysexit(f"\n[Err##] The HCDB file '{argument['hcdb']}' does not "
                 "exist. Please check this given file.")
 
     # Check the SCOPe classification file extension.
     if not argument["scope"].endswith(".txt"):
-        sysexit(f"\n[Err##] The hcdb file '{argument['scope']}' extension "
-                "is invalid. Please, give a '.txt' file.")
+        sysexit("\n[Err##] The SCOPe classification file "
+                f"'{argument['scope']}' extension is invalid. Please, give a "
+                "'.txt' file.")
 
     # Check if the SCOPe classification file exists.
     if not os.path.exists(argument["scope"]):
-        sysexit(f"\n[Err##] The input file '{argument['scope']}' does not "
-                "exist. Please check this given file.")
+        sysexit("\n[Err##] The SCOPe classification file "
+                f"'{argument['scope']}' does not exist. Please check this "
+                "given file.")
 
     # Check if the output directory exists.
     if not os.path.exists(argument["output"]):
