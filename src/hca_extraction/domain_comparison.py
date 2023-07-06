@@ -99,6 +99,8 @@ def __format_end_line(line: str, length: int = 80) -> str:
 def parse_hc(
     *code,
     path: str,
+    scope: str,
+    max_level: int = 4,
     window: int = 10,
     treshold: float = 0.5,
     skip_same: bool = False,
@@ -126,6 +128,12 @@ def parse_hc(
     path : `str`
         The database path. It needs to be in a pyHCA`.out` format (unchecked
         here).
+    path : `str`
+        The path to the SCOPe classification file.
+    max_level : `int`, optional
+        Integer between 1 and 4. It is used to define the depth in the SCOPe
+        classification tree that have to be taken in consideration. 1 the
+        class, 2 the fold, 3 the superfammily and 4 the familly, by default 4.
     window : `int`, optional
         Window size to evalute the context diversity, by default 10.
     treshold : `float`, optional
@@ -142,6 +150,32 @@ def parse_hc(
     `list`
         The obtained result.
     """
+    if max_level > 4 or max_level < 1:
+        s_exit("\n[Err##] SCOPe depth have to be equal to 1, 2, 3 or 4.")
+
+    classification: "dict[str: str]" = {}
+
+    # Parse a given SCOPe classification data file.
+    with open(scope, "r", encoding="utf-8") as file:
+        for line in tqdm(list(file), "    PARSING SCOPe FILE"):
+            # Skip the comment lines.
+            if line[0] == "#":
+                continue
+
+            split_line: "list[str]" = line.split()
+
+            # Skip the line containing other things than domains.
+            if split_line[3] == "-":
+                continue
+
+            if split_line[2][0] > "d":
+                break
+
+            s_class: str = ".".join(split_line[2].split(".")[:max_level])
+
+            # Adding a domain to the classification dictionary.
+            classification[split_line[3]] = s_class
+
     len_code: int = len(code)
 
     # Check that
@@ -163,7 +197,6 @@ def parse_hc(
             sentence: "list[str]" = []
             corpus: "dict[str: list]" = {}
             hc: str = __translate(code_i)
-            print(code_i, hc)
 
             for line in file:
                 line: list = line.strip().split()
@@ -197,7 +230,11 @@ def parse_hc(
         for code_j in code[i + 1:]:
             for d_m, s_m in tqdm(code_corpus[code_i].items(), " PARSING HC CODES"):
                 for d_n, s_n in code_corpus[code_j].items():
-                    if d_m == d_n and skip_same:
+                    same_d: bool = d_m == d_n and skip_same
+                    same_c: bool = classification[d_m] == classification[d_n] \
+                        and skip_same
+
+                    if same_d or same_c:
                         continue
 
                     Context: object = PairewiseContextAnalyzer(s_m, s_n)
@@ -236,7 +273,9 @@ if __name__ == "__main__":
         105,
         165,
         path="data/REDUNDANCY_DATASET/cd-hit_90.out",
-        treshold=0.5,
+        scope="data/SCOPe_2.08_classification.txt",
+        max_level=2,
+        treshold=0.4,
         skip_same=True,
         print_results=True
     ))
